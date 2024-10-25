@@ -15,6 +15,9 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 
+import userRoute from './routes/user.Routes.js'
+app.use('/api/v1/auth', userRoute)
+
 import connectDB from "./database/connectDB.js"
 
 const PORT = process.env.PORT || 7000;
