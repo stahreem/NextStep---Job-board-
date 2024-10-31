@@ -15,14 +15,22 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 
+
+// routes
 import userRoute from './routes/user.Routes.js'
 app.use('/api/v1/auth', userRoute)
 
+import companyRoutes from './routes/company.Routes.js'
+app.use('/api/v1/company', companyRoutes)
+
+import jobRoutes from './routes/job.Routes.js'
+app.use('/api/v1/job', jobRoutes)
+// database and port 
 import connectDB from "./database/connectDB.js"
 
 const PORT = process.env.PORT || 7000;
-app.listen(PORT ,() => {
-    connectDB()
+app.listen(PORT ,async () => {
+   await  connectDB()
     console.log(`Server is running on port ${PORT}`);
     
 } )

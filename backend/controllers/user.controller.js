@@ -51,7 +51,7 @@ export const login = async (req, res) => {
       });
     }
     // check if user exist or not
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     // if user not existed return
     if (!user) {
       return res.status(400).json({
@@ -87,7 +87,8 @@ export const login = async (req, res) => {
         email:user.email, 
         phoneNumber:user.phoneNumber, 
         role: user.role,
-        profile: user.profile 
+        profile: user.profile ,
+        token
       }
 
       return res.status(200).cookie('token', token, {maxAge:1*24*60*60*1000, httpsOnly:true, sameSite:'strict'}).json({
@@ -98,7 +99,7 @@ export const login = async (req, res) => {
 
 
   } catch (error) {
-    console.log("Error in login controller ");
+    console.log("Error in login controller ", error);
   }
 };
 
@@ -116,47 +117,32 @@ export const logout = async (req, res) => {
 }
 
 export const updateProfile = async (req, res) => {
-    try {
-        const { fullName, email, phoneNumber, bio, skills   } = req.body;
-        const file = req.file
+  try {
+      const { fullName, email, phoneNumber, bio, skills } = req.body;
+      const skillArray = skills ? skills.split(",") : [];
 
+      const userId = req.id;
+      
+      let user = await User.findByIdAndUpdate(
+          userId,
+          { fullName, email, phoneNumber, bio, skills: skillArray },
+          { new: true }
+      );
 
-        const skillArray = skills.split(",");
-
-        const userId = req.id;
-
-        let user = User.findById(userId)
-        if (!user) {
-            return res.status(400).json({
-              message: "User not found  ",
+      if (!user) {
+          return res.status(400).json({
+              message: "User not found",
               success: false,
-            });
-          }
-
-          const updateUser = User.updateOne(
-           { fullName,
-             email, 
-             phoneNumber, 
-             bio, 
-            skills:skillArray
-    })
-
-    await updateUser.save()
-    user = {
-        _id: user._id,
-        fullName:user.fullName, 
-        email:user.email, 
-        phoneNumber:user.phoneNumber, 
-        role: user.role,
-        profile: user.profile 
+          });
       }
+
       return res.status(200).json({
-        message: "User profile updated successfully ",
-        user,
-        success: true,
+          message: "User profile updated successfully",
+          user,
+          success: true,
       });
-    } catch (error) {
-        console.log("error in update controller is:",error);
-        
-    }
+  } catch (error) {
+      console.log("error in update controller is:", error);
+      return res.status(500).json({ message: "Internal server error", success: false });
+  }
 }
