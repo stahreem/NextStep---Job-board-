@@ -25,6 +25,9 @@ app.use('/api/v1/company', companyRoutes)
 
 import jobRoutes from './routes/job.Routes.js'
 app.use('/api/v1/job', jobRoutes)
+
+import applicationRoutes from './routes/application.Routes.js'
+app.use('/api/v1/applications', applicationRoutes)
 // database and port 
 import connectDB from "./database/connectDB.js"
 
