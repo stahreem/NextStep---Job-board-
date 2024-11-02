@@ -1,6 +1,6 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
   try {
@@ -68,81 +68,88 @@ export const login = async (req, res) => {
       });
     }
 
-    // check if role is correct or not 
-    if(role ===! user.role){
-        return res.status(400).json({
-          message: " Account does not exist with current role ",
-          success: false,
-        });
-      }
+    // check if role is correct or not
+    if (role === !user.role) {
+      return res.status(400).json({
+        message: " Account does not exist with current role ",
+        success: false,
+      });
+    }
 
-      const tokenData = {
-        userId: user._id
-      }
-      const token = await jwt.sign(tokenData, process.env.SECRET_KEY,{expiresIn:"15d"})
+    const tokenData = {
+      userId: user._id,
+    };
+    const token = await jwt.sign(tokenData, process.env.SECRET_KEY, {
+      expiresIn: "15d",
+    });
 
-      user = {
-        _id: user._id,
-        fullName:user.fullName, 
-        email:user.email, 
-        phoneNumber:user.phoneNumber, 
-        role: user.role,
-        profile: user.profile ,
-        token
-      }
+    user = {
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      profile: user.profile,
+      token,
+    };
 
-      return res.status(200).cookie('token', token, {maxAge:1*24*60*60*1000, httpsOnly:true, sameSite:'strict'}).json({
+    return res
+      .status(200)
+      .cookie("token", token, {
+        maxAge: 1 * 24 * 60 * 60 * 1000,
+        httpsOnly: true,
+        sameSite: "strict",
+      })
+      .json({
         message: `Welcome Back ${user.fullName} `,
         user,
         success: true,
-      })
-
-
+      });
   } catch (error) {
     console.log("Error in login controller ", error);
   }
 };
 
-
 export const logout = async (req, res) => {
-    try {
-        return res.status(200).cookie("token", "", {maxAge:0}).json({
-            message: "User logout  successfully ",
-            success: true,
-        })
-    } catch (error) {
-        console.log("the error in logout error ", error);
-        
-    }
-}
+  try {
+    return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+      message: "User logout  successfully ",
+      success: true,
+    });
+  } catch (error) {
+    console.log("the error in logout error ", error);
+  }
+};
 
 export const updateProfile = async (req, res) => {
   try {
-      const { fullName, email, phoneNumber, bio, skills } = req.body;
-      const skillArray = skills ? skills.split(",") : [];
+    const { fullName, email, phoneNumber, bio, skills } = req.body;
+    const skillArray = skills ? skills.split(",") : [];
 
-      const userId = req.id;
-      
-      let user = await User.findByIdAndUpdate(
-          userId,
-          { fullName, email, phoneNumber, bio, skills: skillArray },
-          { new: true }
-      );
+    const userId = req.id;
 
-      if (!user) {
-          return res.status(400).json({
-              message: "User not found",
-              success: false,
-          });
-      }
+    let user = await User.findByIdAndUpdate(
+      userId,
+      { fullName, email, phoneNumber, bio, skills: skillArray },
+      { new: true }
+    );
 
-      return res.status(200).json({
-          message: "User profile updated successfully",
-          user,
-          success: true,
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
       });
+    }
+
+    return res.status(200).json({
+      message: "User profile updated successfully",
+      user,
+      success: true,
+    });
   } catch (error) {
-      console.log("error in update controller is:", error);
-      return res.status(500).json({ message: "Internal server error", success: false });
+    console.log("error in update controller is:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
-}
+};
