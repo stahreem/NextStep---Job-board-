@@ -1,0 +1,13 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.min-h-screen {
+    min-height: 100vh; /* Ensures the minimum height is full viewport height */
+}
+
+.flex-1 {
+    flex: 1; /* Allows this div to grow and take the remaining space */
+}
+  
