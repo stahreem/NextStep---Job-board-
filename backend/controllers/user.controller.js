@@ -36,7 +36,10 @@ export const register = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log("Error in register controller ");
+    console.log("Error in register controller ",error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
 };
 
@@ -46,32 +49,33 @@ export const login = async (req, res) => {
     const { email, password, role } = req.body;
     if (!email || !password || !role) {
       return res.status(400).json({
-        message: "Fill all the credential ",
-        success: false,
-      });
-    }
-    // check if user exist or not
-    let user = await User.findOne({ email });
-    // if user not existed return
-    if (!user) {
-      return res.status(400).json({
-        message: "User does not existed  ",
-        success: false,
-      });
-    }
-    // check hashed password
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) {
-      return res.status(400).json({
-        message: "Password does not match   ",
+        message: "Fill all the credentials",
         success: false,
       });
     }
 
-    // check if role is correct or not
-    if (role === !user.role) {
+    // check if user exists
+    let user = await User.findOne({ email });
+    if (!user) {
       return res.status(400).json({
-        message: " Account does not exist with current role ",
+        message: "User does not exist",
+        success: false,
+      });
+    }
+
+    // check hashed password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({
+        message: "Password does not match",
+        success: false,
+      });
+    }
+
+    // check if role matches
+    if (role !== user.role) {
+      return res.status(400).json({
+        message: "Account does not exist with current role",
         success: false,
       });
     }
@@ -97,18 +101,22 @@ export const login = async (req, res) => {
       .status(200)
       .cookie("token", token, {
         maxAge: 1 * 24 * 60 * 60 * 1000,
-        httpsOnly: true,
+        httpOnly: true,
         sameSite: "strict",
       })
       .json({
-        message: `Welcome Back ${user.fullName} `,
+        message: `Welcome back, ${user.fullName}`,
         user,
         success: true,
       });
   } catch (error) {
-    console.log("Error in login controller ", error);
+    console.log("Error in login controller:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
 };
+
 
 export const logout = async (req, res) => {
   try {
@@ -118,6 +126,9 @@ export const logout = async (req, res) => {
     });
   } catch (error) {
     console.log("the error in logout error ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
   }
 };
 
