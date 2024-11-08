@@ -5,15 +5,20 @@ import {  createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Dashboard from './pages/Dashboard';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import FrontPage from './pages/FrontPage';
 
 const appRouter = createBrowserRouter([
   {
     path:'/',
-    element:<Dashboard/>
+    element:<FrontPage/>
   },
   {
     path:'/login',
     element:<Login/>
+  },
+  {
+    path:'/dashboard',
+    element:<Dashboard/>
   },
   {
     path:'/signup',
