@@ -28,7 +28,7 @@ function Signup() {
     password: "",
     role: "",
   });
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -47,18 +47,18 @@ function Signup() {
 
     // Basic validation
     if (!fullName || !email || !phoneNumber || !password || !role) {
-      setError("All fields are required");
+      toast.error("All fields are required");
       return;
     }
 
-      console.log(input);
+      // console.log(input);
       
       const res = await axios.post(
         `${USER_API_END_POINT}/register`,
         input,
         {
           headers: {
-            "Content-Type": "application/json", // Use correct content type for JSON data
+            "Content-Type": "application/json", 
           },
           withCredentials: true,
         }
@@ -66,26 +66,18 @@ function Signup() {
 
       // Check if registration was successful
       if (res.data.success) {
-        navigate("/login");
         toast.success(res.data.message || "Registration successful!");
+        navigate("/login");
       } else {
         // Handle case where success is false
-        toast.success(res.data.message || "Registration failed. Please try again.")
-        setError(res.data.message || "Registration failed. Please try again.");
+        toast.error(res.data.message || "Registration failed. Please try again.")
       }
-
-      // Clear form and error message after successful submission
-      setInput({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        password: "",
-        role: "",
-      });
-      setError("");
     } catch (err) {
-      setError("Failed to submit the form. Please try again.");
-      console.error("Error:", err.response?.data || err.message);
+      // setError("Failed to submit the form. Please try again.");
+      const errorMsg = err.response?.data?.message || "Sign up failed. Please try again.";
+      toast.error(errorMsg);
+      // console.error("Error:", err.response?.data || err.message);
+
     } finally{
       dispatch(setLoading(false))
     }
@@ -100,8 +92,8 @@ function Signup() {
             Sign Up
           </h1>
 
-          {/* Error Message */}
-          {error && <p className="mb-4 text-center text-red-500">{error}</p>}
+          {/* Error Message
+          {error && <p className="mb-4 text-center text-red-500">{error}</p>} */}
 
           {/* Name */}
           <div className="mb-4">

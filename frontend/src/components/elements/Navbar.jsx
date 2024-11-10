@@ -18,7 +18,7 @@ const Navbar = () => {
       <div className="flex items-center justify-between h-12 mx-auto max-w-7xl">
         {/* Left side - Brand */}
         <div>
-          <Link to="/" className="text-xl font-bold text-gray-900">
+          <Link to="/dashboard" className="text-xl font-bold text-gray-900">
             Next<span className="text-[#0dbfb3]">Step</span>
           </Link>
         </div>
@@ -28,7 +28,7 @@ const Navbar = () => {
           {/* Desktop Links */}
           <ul className="items-center hidden gap-6 font-medium md:flex">
             <li>
-              <Link to="/">Home</Link>
+              <Link to="/dashboard">Home</Link>
             </li>
             <li>
               <Link to="/jobs">Jobs</Link>

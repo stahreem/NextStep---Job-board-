@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import FrontPage from './pages/FrontPage';
+import Jobs from './pages/Jobs';
+import Browse from './pages/Browse';
 
 const appRouter = createBrowserRouter([
   {
@@ -17,22 +19,32 @@ const appRouter = createBrowserRouter([
     element:<Login/>
   },
   {
+    path:'/signup',
+    element:<Signup/>
+  },
+  {
     path:'/dashboard',
     element:<Dashboard/>
   },
   {
-    path:'/signup',
-    element:<Signup/>
+    path:'/jobs',
+    element:<Jobs/>
   },
+  {
+    path:'/browse',
+    element:<Browse/>
+  },
+
 ])
 
 function App() {
 
   return (
     
-    <div className='min-h-screen bg-gradient-to-br from-[#fff1eb] to-[#ace0f9] flex flex-col'>
-  <RouterProvider router={ appRouter}/>
+    <div className="h-screen bg-gradient-to-br from-[#fff1eb] to-[#ace0f9] bg-fixed flex flex-col">
+      <RouterProvider router={appRouter} />
   </div>
+  
   )
 }
 
