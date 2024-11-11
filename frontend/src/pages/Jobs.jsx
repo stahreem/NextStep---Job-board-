@@ -22,7 +22,7 @@ function Jobs() {
             {jobsArray.length <= 0 ? (
               <span className="text-center text-gray-500">Jobs Not Found</span>
             ) : (
-              <div className="grid grid-cols-1 gap-2 mb-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-2 mb-3 overflow-y-clip sm:grid-cols-2 lg:grid-cols-3">
                 {jobsArray.map((item, index) => (
                   <JobCard key={index} />
                 ))}

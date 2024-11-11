@@ -8,6 +8,7 @@ import Signup from './pages/auth/Signup';
 import FrontPage from './pages/FrontPage';
 import Jobs from './pages/Jobs';
 import Browse from './pages/Browse';
+import StudentProfile from './pages/StudentProfile';
 
 const appRouter = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const appRouter = createBrowserRouter([
   {
     path:'/browse',
     element:<Browse/>
+  },
+  {
+    path:'/studentProfile',
+    element:<StudentProfile/>
   },
 
 ])

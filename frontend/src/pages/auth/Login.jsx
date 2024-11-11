@@ -16,7 +16,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { USER_API_END_POINT } from "@/utils/constant";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "@/redux/authSlice";
+import { setLoading, setUser } from "@/redux/authSlice";
 import { store } from "@/redux/store";
 import { Loader } from "lucide-react";
 
@@ -51,10 +51,10 @@ function Login() {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-  
+      dispatch(setUser(res.data.user))
+      navigate("/dashboard");
       if (res.data.success) {
         toast.success(res.data.message || "Login successful!");
-        navigate("/");
       } else {
         toast.error(res.data.message || "Login failed. Please try again.");
       }

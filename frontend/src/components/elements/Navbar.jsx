@@ -8,10 +8,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+import { store } from "@/redux/store";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const user = false; // Set to `true` to simulate an authenticated user
+  const { user } = useSelector(store =>store.auth)
 
   return (
     <nav className="top-0 w-full p-4 bg-white shadow-md">
@@ -66,18 +68,18 @@ const Navbar = () => {
                   <hr className="my-3 text-[#000]" />
 
                   {/* Navigation Links */}
-                  <div className="gap-2 mb-4 font-medium">
+                  {/* <div className="gap-2 mb-4 font-medium">
                     <Link to="/" className="block hover:text-[#023b81] cursor-pointer">Home</Link>
                     <Link to="/jobs" className="block hover:text-[#023b81] cursor-pointer">Jobs</Link>
                     <Link to="/browse" className="block hover:text-[#023b81] cursor-pointer">Browse</Link>
                   </div>
-                  <hr className="my-3 text-[#000]" />
+                  <hr className="my-3 text-[#000]" /> */}
 
                   {/* Profile Management Links */}
-                  <div className="gap-2 font-medium">
-                    <p className="hover:text-[#023b81] cursor-pointer">Profile</p>
-                    <p className="hover:text-[#023b81] cursor-pointer">My Application</p>
-                    <p className="hover:text-[#023b81] cursor-pointer">Edit Resume</p>
+                  <div className="flex flex-col gap-2 font-medium">
+                    <Link to="/studentProfile" className="hover:text-[#023b81] cursor-pointer">Profile</Link>
+                    <Link className="hover:text-[#023b81] cursor-pointer">My Application</Link>
+                    <Link className="hover:text-[#023b81] cursor-pointer">Edit Resume</Link>
                     <p className="hover:text-[#023b81] cursor-pointer">Log out</p>
                   </div>
                 </div>
@@ -101,7 +103,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && !user && (
+      {isMenuOpen && user && (
         <div className="flex flex-col items-center p-4 space-y-4 bg-white shadow-md md:hidden">
           <Link to="/" className="text-lg">Home</Link>
           <Link to="/jobs" className="text-lg">Jobs</Link>

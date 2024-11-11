@@ -32,12 +32,16 @@ function JobCard() {
       <div className="mt-[-10px]">
         <h2 className="text-xl font-bold sm:text-lg text-textPrimary">Job Title</h2>
         <p className="mt-1 text-sm sm:text-xs text-textSecondary">
-          Some brief description about the job role, key responsibilities, or highlights.
+       voluptate cupidatat non cillum officia. Proident
+          aliqua magna do enim nulla commodo amet dolore ut occaecat. Aliquip
+          aute sit nisi veniam elit elit sunt voluptate consequat consectetur
+          incididunt cillum. Ex sint occaecat duis duis aliquip sint fugiat
+          officia quis.
         </p>
       </div>
 
       {/* Job Details Badges */}
-      <div className="flex items-center gap-2 mt-6 overflow-x-hidden whitespace-nowrap">
+      <div className="flex items-center gap-2 mt-4 overflow-x-hidden whitespace-nowrap">
         <Badge variant="outline" className="text-xs sm:text-xs md:text-sm border-primaryAccent text-primaryAccent">
           10 Positions
         </Badge>
