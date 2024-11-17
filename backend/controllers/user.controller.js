@@ -53,7 +53,6 @@ export const login = async (req, res) => {
         success: false,
       });
     }
-
     // check if user exists
     let user = await User.findOne({ email });
     if (!user) {
@@ -93,7 +92,7 @@ export const login = async (req, res) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
-      profile: user.profile,
+      studentDetails: user.studentDetails,
       token,
     };
 
@@ -134,33 +133,68 @@ export const logout = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, bio, skills } = req.body;
-    const skillArray = skills ? skills.split(",") : [];
-
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      graduationStatus,
+      github,
+      linkedin,
+      about,
+      education,
+      experience,
+      skills,
+      projects,
+      interests,
+    } = req.body;
+   
     const userId = req.id;
 
-    let user = await User.findByIdAndUpdate(
-      userId,
-      { fullName, email, phoneNumber, bio, skills: skillArray },
-      { new: true }
-    );
+    // Fetch user by ID
+    const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: "User not found",
         success: false,
       });
     }
 
+    // Update shared fields
+    if (fullName) user.fullName = fullName;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+
+    // Update student-specific fields only if role is "student"
+    if (user.role === "student") {
+      user.studentDetails = {
+        ...user.studentDetails, // Retain existing values
+        ...(graduationStatus && { graduationStatus }),
+        ...(github && { github }),
+        ...(linkedin && { linkedin }),
+        ...(about && { about }),
+        ...(education && { education }),
+        ...(experience && { experience }), 
+        ...(skills && { skills }), 
+        ...(projects && { projects }), 
+        ...(interests && { interests }), 
+      };
+    }
+
+    // Save the updated user document
+    const updatedUser = await user.save();
+
     return res.status(200).json({
       message: "User profile updated successfully",
-      user,
+      user: updatedUser,
       success: true,
     });
   } catch (error) {
-    console.log("error in update controller is:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal server error", success: false });
+    console.error("Error in updateProfile controller:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
   }
 };
+

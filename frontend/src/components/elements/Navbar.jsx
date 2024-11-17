@@ -63,8 +63,8 @@ const Navbar = () => {
               <PopoverContent className="mt-2 mr-3 w-72">
                 <div className="p-4">
                   {/* User Info */}
-                  <h4 className="text-lg font-semibold">Shifa Tahreem</h4>
-                  <p className="mb-3 text-sm">shifatahreem@gmail.com</p>
+                  <h4 className="text-lg font-semibold">{ user?.fullName}</h4>
+                  <p className="mb-3 text-sm">{ user?.email}</p>
                   <hr className="my-3 text-[#000]" />
 
                   {/* Navigation Links */}
@@ -77,9 +77,9 @@ const Navbar = () => {
 
                   {/* Profile Management Links */}
                   <div className="flex flex-col gap-2 font-medium">
-                    <Link to="/studentProfile" className="hover:text-[#023b81] cursor-pointer">Profile</Link>
-                    <Link className="hover:text-[#023b81] cursor-pointer">My Application</Link>
-                    <Link className="hover:text-[#023b81] cursor-pointer">Edit Resume</Link>
+                    <Link to="/student/profile" className="hover:text-[#023b81] cursor-pointer">Profile</Link>
+                    <Link to="/student/application"  className="hover:text-[#023b81] cursor-pointer">My Application</Link>
+                    {/* <Link className="hover:text-[#023b81] cursor-pointer">Edit Resume</Link> */}
                     <p className="hover:text-[#023b81] cursor-pointer">Log out</p>
                   </div>
                 </div>

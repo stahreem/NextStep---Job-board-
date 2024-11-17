@@ -9,6 +9,9 @@ import FrontPage from './pages/FrontPage';
 import Jobs from './pages/Jobs';
 import Browse from './pages/Browse';
 import StudentProfile from './pages/StudentProfile';
+import AppliedJob from './pages/AppliedJob';
+import JobDescription from './pages/JobDescription';
+import EditStudentProfile from './pages/EditStudentProfile';
 
 const appRouter = createBrowserRouter([
   {
@@ -36,8 +39,20 @@ const appRouter = createBrowserRouter([
     element:<Browse/>
   },
   {
-    path:'/studentProfile',
+    path:'/student/profile',
     element:<StudentProfile/>
+  },
+  {
+    path:'/student/profile/edit',
+    element:<EditStudentProfile/>
+  },
+  {
+    path:'/student/application',
+    element:<AppliedJob/>
+  },
+  {
+    path:'/job/description/:id',
+    element:<JobDescription/>
   },
 
 ])
@@ -55,14 +70,5 @@ function App() {
 
 export default App
 
-//      <BrowserRouter router = { appRouter }>
-  
-//  <Routes>
-//   <Route path='/' element={<Dashboard/>}/>
-//   {/* <Route path='/signin' element={<SignIn/>}/>
-//   <Route path='/signup' element={<SignUp/>}/>
-//   <Route path='/editor' element={<CreateOrEditBlog/>}/> */}
-//  </Routes>
 
-//   </BrowserRouter>
   

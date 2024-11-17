@@ -23,16 +23,36 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "recruiter"],
       required: true,
     },
-    profile: {
-      bio: { type: String },
+    studentDetails: {
+      graduationStatus: { type: String },
+      github: { type: String },
+      linkedin: { type: String },
+      about: { type: String },
+      education: [
+        {
+          degree: { type: String },
+          institution: { type: String },
+          year: { type: String }, // Using string for consistency
+        },
+      ],
+      experience: [
+        {
+          role: { type: String },
+          company: { type: String },
+          year: { type: String },
+        },
+      ],
       skills: [{ type: String }],
-      resume: { type: String },
-      resumeOriginalName: { type: String },
-      company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
-      profilePhoto: {
-        type: String,
-        default: "",
-      },
+      projects: [
+        {
+          name: { type: String },
+          description: { type: String },
+          link: { type: String },
+        },
+      ],
+      interests: [{ type: String }],
+      resumeLink: { type: String },
+
     },
   },
   { timestamps: true }

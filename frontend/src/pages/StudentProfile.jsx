@@ -1,11 +1,19 @@
 // import React from 'react';
-import { Badge } from "@/components/ui/badge"; // Assuming Badge component is imported
+import { Badge } from "@/components/ui/badge"; 
 import Navbar from "@/components/elements/Navbar";
-import { Pencil } from "lucide-react"; // Assuming Lucide Icons for the edit icon
+import { Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { store } from "@/redux/store";
 // import { useDispatch } from "react-redux";
 // import { editProfile } from "@/store/actions"; // Update with actual action path
 
+
 function StudentProfile() {
+  const isResume = true;
+  const navigate = useNavigate()
+  const {user} = useSelector((store) => store.auth )
+  const userRole = user?.role;  // student recruiter
   // const dispatch = useDispatch();
 
   // Edit button handler
@@ -23,16 +31,20 @@ function StudentProfile() {
           <div className="flex flex-col justify-between mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="mt-4 text-2xl font-bold text-[#0e4d62]">John Doe</h2>
-                <p className="text-sm text-gray-600">Computer Science Student, Class of 2024</p>
+                <h2 className="mt-4 text-2xl font-bold text-[#0e4d62]">{user?.fullName}</h2>
+                <p className="text-sm text-gray-600">{user?.studentDetails?.graduationStatus} </p>
               </div>
-              <button
-                className="text-gray-600 hover:text-blue-600"
-                aria-label="Edit Profile"
-                // onClick={handleEdit}
-              >
-                <Pencil className="w-5 h-5" />
-              </button>
+              {
+                 userRole === "student" && 
+                 <button
+                 className="text-gray-600 hover:text-blue-600"
+                 aria-label="Edit Profile"
+                  onClick = {() =>navigate('/student/profile/edit')}
+               >
+                 <Pencil className="w-5 h-5" />
+               </button>
+              }
+             
             </div>
           </div>
 
@@ -40,9 +52,9 @@ function StudentProfile() {
           <div className="mb-8">
             <h3 className="mb-3 text-lg font-semibold text-[#0e4d62]">Contact</h3>
             <ul className="space-y-1 text-sm text-gray-700">
-              <li><strong>Email: </strong> <a href="mailto:john@mail.com" className="text-gray-500">john@mail.com</a></li>
-              <li><strong>GitHub: </strong> <a href="https://github.com" target="_blank" className="text-gray-500">https://github.com</a></li>
-              <li><strong>LinkedIn: </strong> <a href="https://linkedin.com" target="_blank" className="text-gray-500">https://linkedin.com</a></li>
+              <li><strong>Email: </strong> <a href="mailto:john@mail.com" className="text-gray-500">{ user?.email}</a></li>
+              <li><strong>GitHub: </strong> <a href="https://github.com" target="_blank" className="text-gray-500">{user?.studentDetails?.github }</a></li>
+              <li><strong>LinkedIn: </strong> <a href="https://linkedin.com" target="_blank" className="text-gray-500">{user?.studentDetails?.linkedin}</a></li>
             </ul>
           </div>
 
@@ -50,7 +62,7 @@ function StudentProfile() {
           <div className="mb-8">
             <h3 className="mb-3 text-lg font-semibold text-gray-900">About Me</h3>
             <p className="text-sm text-gray-700">
-              Passionate computer science student with interests in full-stack development, AI, and data science. Eager to apply my knowledge to real-world projects and learn from industry professionals.
+              {user?.studentDetails?.about}
             </p>
           </div>
 
@@ -90,12 +102,9 @@ function StudentProfile() {
           <div className="mb-8">
             <h3 className="mb-3 text-lg font-semibold text-gray-900">Skills</h3>
             <div className="flex flex-wrap gap-2 cursor-pointer">
-              <Badge>JavaScript</Badge>
-              <Badge>React</Badge>
-              <Badge>Node.js</Badge>
-              <Badge>MongoDB</Badge>
-              <Badge>Python</Badge>
-              <Badge>Machine Learning</Badge>
+              {
+                 user?.studentDetails?.skills.length !== 0 ?  user?.studentDetails?.skills.map((skill, index) => <Badge key={index}>{skill}</Badge>) :<span className="text-xs font-semibold text-gray-500">Not Applicable </span>
+              }
             </div>
           </div>
 
@@ -122,21 +131,18 @@ function StudentProfile() {
           <div className="mb-8">
             <h3 className="mb-3 text-lg font-semibold text-[#0e4d62]">Interests</h3>
             <div className="flex flex-wrap gap-2">
-              <Badge>Artificial Intelligence</Badge>
-              <Badge>Blockchain</Badge>
-              <Badge>Open Source</Badge>
-              <Badge>Web Development</Badge>
+            {
+                 user?.studentDetails?.interests.length !== 0 ?  user?.studentDetails?.interests.map((skill, index) => <Badge key={index}>{skill}</Badge>) :<span className="text-xs font-semibold text-gray-500">Not Applicable </span>
+              }
             </div>
           </div>
 
           {/* View Resume Button */}
           <div className="mt-8">
-            <button
-              className="px-4 py-2 font-semibold text-white bg-[#0e4d62] rounded-md hover:bg-[#093644] transition"
-              
-            >
-              View Resume
-            </button>
+{
+  isResume ? <a target="blank" href="https://youtube.com"
+  className="px-4 py-2 font-semibold text-white bg-[#0e4d62] rounded-md hover:bg-[#093644] transition">View Resume</a> : <span className="text-xs font-semibold text-gray-500">Not Applicable </span>
+}
           </div>
         </div>
       </div>

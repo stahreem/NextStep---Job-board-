@@ -3,8 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Bookmark } from "lucide-react"; // Importing a bookmark icon
 import { Button } from "@/components/ui/button"; // Assuming you have a button component available in ui
+import { useNavigate } from "react-router-dom";
 
 function JobCard() {
+  const navigate = useNavigate()
+  const jobId = 'jobId'
   return (
     <div className="p-6 sm:p-4 mb-5 md:p-5 rounded-lg shadow-md border border-[#b1ebe4] bg-white hover:shadow-lg transition-shadow duration-200 ease-in-out relative">
        <span className="text-xs text-[#1c3230] font-semibold"> 3 days ago</span>
@@ -63,7 +66,8 @@ function JobCard() {
 
       {/* Upload Time and Action Buttons */}
       <div className="flex justify-start gap-4 mt-10">
-        <Button variant="outline" className="px-3 py-1 text-xs sm:text-sm border-primaryAccent text-primaryAccent">
+        <Button variant="outline" className="px-3 py-1 text-xs sm:text-sm border-primaryAccent text-primaryAccent"
+        onClick = {() =>navigate(`/job/description/${jobId}`)}>
           Details
         </Button>
         <Button className="bg-[#0e4d62] text-white px-6
