@@ -23,7 +23,7 @@ const filterData = [
 
 function FilterCard() {
   return (
-    <div className="p-4 bg-white border rounded-md shadow-sm">
+    <div className="p-4 bg-white border rounded-md shadow-sm ">
       <h1 className="mb-4 text-xl font-semibold">Filter Options</h1>
       <hr className="mb-4"/>
 

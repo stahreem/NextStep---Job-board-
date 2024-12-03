@@ -2,44 +2,70 @@ import Navbar from "@/components/elements/Navbar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import {
-  DynamicSection,
-  DynamicArraySection,
-} from "@/components/elements/DynamicSection";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
 import { useSelector } from "react-redux";
-import { store } from "@/redux/store";
 import axios from "axios";
 import { USER_API_END_POINT } from "../utils/Constant";
 
 function EditStudentProfile() {
+  
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
 
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    
-      fullName: user?.fullName || "",
-      graduationStatus: user?.studentDetails?.graduationStatus || "",
-      email: user?.email || "",
-      phoneNumber: user?.phoneNumber || "",
-      password: user?.password || "",
-      github: user?.studentDetails?.github || "",
-      linkedin: user?.studentDetails?.linkedin || "",
-      about: user?.studentDetails?.about || "",
-      education: user?.studentDetails?.education?.length ? user.studentDetails.education  : [{ degree: "", institution: "", year: "" }],
-      experience: user?.studentDetails?.experience?.length ? user.studentDetails.experience : [{ role: "", company: "", year: "" }],
-        skills: user?.studentDetails?.skills?.length ? user.studentDetails.skills : [""],
-      projects: user?.studentDetails?.projects?.length  ? user.studentDetails.projects : [{ name: "", description: "", link: "" }],
-        interests: user?.studentDetails?.interests?.length ? user.studentDetails.interests : [""],
-      resumeLink: user?.resumeLink || "",
-      
-      
-    
+    fullName: "",
+    graduationStatus: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    github: "",
+    linkedin: "",
+    about: "",
+    education: [{ degree: "", institution: "", year: "" }],
+    experience: [{ role: "", company: "", year: "" }],
+    skills: [""],
+    projects: [{ name: "", description: "", link: "" }],
+    interests: [""],
+    resumeLink: "",
   });
+
+  // Pre-fill the form data once the user data is available
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user?.fullName || "",
+        graduationStatus: user?.studentDetails?.graduationStatus || "",
+        email: user?.email || "",
+        phoneNumber: user?.phoneNumber || "",
+        password: user?.password || "",
+        github: user?.studentDetails?.github || "",
+        linkedin: user?.studentDetails?.linkedin || "",
+        about: user?.studentDetails?.about || "",
+        education: user?.studentDetails?.education?.length
+          ? user.studentDetails.education
+          : [{ degree: "", institution: "", year: "" }],
+        experience: user?.studentDetails?.experience?.length
+          ? user.studentDetails.experience
+          : [{ role: "", company: "", year: "" }],
+        skills: user?.studentDetails?.skills?.length
+          ? user.studentDetails.skills
+          : [""],
+        projects: user?.studentDetails?.projects?.length
+          ? user.studentDetails.projects
+          : [{ name: "", description: "", link: "" }],
+        interests: user?.studentDetails?.interests?.length
+          ? user.studentDetails.interests
+          : [""],
+          resumeLink: user?.studentDetails?.resumeLink || "",
+      }));
+    }
+  }, [user]); // Only run when user data changes
 
   // Handlers for single-field changes
   const handleChange = (e) => {
@@ -47,65 +73,89 @@ function EditStudentProfile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-
-  const handleArrayChange = (index, key, value, field) => {
-    setFormData((prev) => {
-      const updatedArray = [...prev[field]];
-  
-      // Handle array of objects
-      if (key) {
-        updatedArray[index][key] = value;
-      } 
-      // Handle array of strings
-      else {
-        updatedArray[index] = value;
-      }
-  
-      return { ...prev, [field]: updatedArray };
+  const handleArrayChange = (index, field, value, section) => {
+    const updatedSection = [...formData[section]];
+    updatedSection[index] = {
+      ...updatedSection[index],
+      [field]: value,
+    };
+    setFormData({
+      ...formData,
+      [section]: updatedSection,
     });
   };
 
-  const handleAddField = (field, emptyObject) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: [...prev[field], emptyObject],
-    }));
+  const handleChangeForSkillsAndInterest = (index, value, section) => {
+    const updatedSection = [...formData[section]];
+    updatedSection[index] = value; // Replace the value directly
+    setFormData({
+      ...formData,
+      [section]: updatedSection,
+    });
+  };
+
+  const handleAddField = (section, newItem) => {
+    setFormData({
+      ...formData,
+      [section]: [...formData[section], newItem],
+    });
   };
 
   const handleRemoveField = (field, index) => {
     if (formData[field].length > 1) {
       const updatedArray = [...formData[field]];
       updatedArray.splice(index, 1);
-      setFormData((prev) => ({ ...prev, [field]: updatedArray }));
+      setFormData({
+        ...formData,
+        [field]: updatedArray,
+      });
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    setFormData({ ...formData, file });
+  };
+  
+  
   // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     console.log("Updated Profile Data:", formData);
+    // Uncomment to send data to the backend
     try {
+
+      
+
       const res = await axios.post(
         `${USER_API_END_POINT}/profile/update`,
         formData,
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         }
       );
+      setLoading(false);
+
+      console.log(res);
+
       if (res.data.success) {
+        toast.success(res.data.message ||  "Profile updated successfully!");
         navigate("/student/profile");
-        toast.success(res.data.message || "Update Data successful!");
       } else {
         toast.error(
-          res.data.message || "Update Data failed. Please try again."
+          res.data.message || "Failed to update profile."
         );
       }
     } catch (err) {
+      setLoading(false);
       const errorMsg =
-        err.response?.data?.message || "Login failed. Please try again.";
+        err.response?.data?.message || "Update failed. Please try again.";
       toast.error(errorMsg);
     }
+
+   
   };
 
   return (
@@ -203,98 +253,359 @@ function EditStudentProfile() {
               />
             </div>
 
-            {/* Dynamic Sections: Education, Experience, Projects, Skills, Interests */}
-            <DynamicSection
-              title="Education"
-              field="education"
-              items={formData.education}
-              onAdd={() =>
-                handleAddField("education", {
-                  degree: "",
-                  institution: "",
-                  year: "",
-                })
-              }
-              onChange={handleArrayChange}
-              fields={[
-                { name: "degree", placeholder: "Degree" },
-                { name: "institution", placeholder: "Institution" },
-                { name: "year", placeholder: "Year" },
-              ]}
-              onRemove={handleRemoveField}
-            />
-            <DynamicSection
-              title="Experience"
-              field="experience"
-              items={formData.experience}
-              onAdd={() =>
-                handleAddField("experience", {
-                  role: "",
-                  company: "",
-                  year: "",
-                })
-              }
-              onChange={handleArrayChange}
-              fields={[
-                { name: "role", placeholder: "Role" },
-                { name: "company", placeholder: "Company" },
-                { name: "year", placeholder: "Year" },
-              ]}
-              onRemove={handleRemoveField}
-            />
-            <DynamicSection
-              title="Projects"
-              field="projects"
-              items={formData.projects}
-              onAdd={() =>
-                handleAddField("projects", {
-                  name: "",
-                  description: "",
-                  link: "",
-                })
-              }
-              onChange={handleArrayChange}
-              fields={[
-                { name: "name", placeholder: "Project Name" },
-                { name: "description", placeholder: "Description" },
-                { name: "link", placeholder: "Project Link" },
-              ]}
-              onRemove={handleRemoveField}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicArraySection
-                title="Skills"
-                field="skills"
-                items={formData.skills}
-                onAdd={() => handleAddField("skills", "")}
-                onChange={(index, key, value) =>
-                  handleArrayChange(index, key, value, "skills")
-                }
-                onRemove={handleRemoveField}
-              />
-              <DynamicArraySection
-                title="Interests"
-                field="interests"
-                items={formData.interests}
-                onAdd={() => handleAddField("interests", "")}
-                onChange={(index, key, value) =>
-                  handleArrayChange(index, key, value, "interests")
-                }
-                onRemove={handleRemoveField}
-              />
-           
-            </div>
+            {/* Education Section */}
             <div>
-              <Label htmlFor="resumeLink">Resume Link:</Label>
+              <h3 className="text-lg font-semibold">Education</h3>
+              {formData.education.map((item, index) => (
+                <div key={index} className="mb-3 space-y-2">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`degree-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`degree-${index}`}
+                        value={item.degree}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "degree",
+                            e.target.value,
+                            "education"
+                          )
+                        }
+                        placeholder="B.E Computer Science "
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`institution-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`institution-${index}`}
+                        value={item.institution}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "institution",
+                            e.target.value,
+                            "education"
+                          )
+                        }
+                        placeholder="xyz University"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`year-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`year-${index}`}
+                        value={item.year}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "year",
+                            e.target.value,
+                            "education"
+                          )
+                        }
+                        placeholder="2020-2024"
+                      />
+                    </div>
+                  </div>
+                  {formData.education.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleRemoveField("education", index)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() =>
+                  handleAddField("education", {
+                    degree: "",
+                    institution: "",
+                    year: "",
+                  })
+                }
+              >
+                Add Education
+              </Button>
+            </div>
+
+            {/* Experience Section */}
+            <div>
+              <h3 className="text-lg font-semibold">Experience</h3>
+              {formData.experience.map((item, index) => (
+                <div key={index} className="mb-3 space-y-2">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`role-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`role-${index}`}
+                        value={item.role}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "role",
+                            e.target.value,
+                            "experience"
+                          )
+                        }
+                        placeholder="Role"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`company-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`company-${index}`}
+                        value={item.company}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "company",
+                            e.target.value,
+                            "experience"
+                          )
+                        }
+                        placeholder="Company"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`year-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`year-${index}`}
+                        value={item.year}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "year",
+                            e.target.value,
+                            "experience"
+                          )
+                        }
+                        placeholder="Year"
+                      />
+                    </div>
+                  </div>
+                  {formData.experience.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleRemoveField("experience", index)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() =>
+                  handleAddField("experience", {
+                    role: "",
+                    company: "",
+                    year: "",
+                  })
+                }
+              >
+                Add Experience
+              </Button>
+            </div>
+
+            {/* Project  Section */}
+            <div>
+              <h3 className="text-lg font-semibold">Projects</h3>
+              {formData.projects.map((project, index) => (
+                <div key={index} className="mb-3 space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`project-name-${index}`}> </Label>
+                      <Input
+                        type="text"
+                        name={`project-name-${index}`}
+                        value={project.name}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "name",
+                            e.target.value,
+                            "projects"
+                          )
+                        }
+                        placeholder="Project Name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`project-description-${index}`}></Label>
+                      <Input
+                        type="text"
+                        name={`project-description-${index}`}
+                        value={project.description}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "description",
+                            e.target.value,
+                            "projects"
+                          )
+                        }
+                        placeholder="Description"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`project-link-${index}`}> </Label>
+                      <Input
+                        type="url"
+                        name={`project-link-${index}`}
+                        value={project.link}
+                        onChange={(e) =>
+                          handleArrayChange(
+                            index,
+                            "link",
+                            e.target.value,
+                            "projects"
+                          )
+                        }
+                        placeholder="Project Link"
+                      />
+                    </div>
+                  </div>
+                  {formData.projects.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleRemoveField("projects", index)}
+                    >
+                      Remove Project
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() =>
+                  handleAddField("projects", {
+                    name: "",
+                    description: "",
+                    link: "",
+                  })
+                }
+              >
+                Add Project
+              </Button>
+            </div>
+
+              {/* Skills and interest Section */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Skills Section */}
+              <div>
+                <h3 className="text-lg font-semibold">Skills</h3>
+                {formData.skills.map((skill, index) => (
+                  <div key={index} className="mb-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Label htmlFor={`skill-${index}`}></Label>
+                        <Input
+                          type="text"
+                          name={`skill-${index}`}
+                          value={skill} // Make sure it's a string
+                          onChange={
+                            (e) =>
+                              handleChangeForSkillsAndInterest(
+                                index,
+                                e.target.value,
+                                "skills"
+                              ) // Corrected
+                          }
+                          placeholder="Skill"
+                        />
+                      </div>
+                      {formData.skills.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => handleRemoveField("skills", index)}
+                          className="ml-2"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  onClick={() => handleAddField("skills", "")} // Adding a string, not an object
+                >
+                  Add Skill
+                </Button>
+              </div>
+
+              {/* Interests Section */}
+              <div>
+                <h3 className="text-lg font-semibold">Interests</h3>
+                {formData.interests.map((interest, index) => (
+                  <div key={index} className="mb-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Label htmlFor={`interest-${index}`}></Label>
+                        <Input
+                          type="text"
+                          name={`interest-${index}`}
+                          value={interest} // Ensure this is a string
+                          onChange={
+                            (e) =>
+                              handleChangeForSkillsAndInterest(
+                                index,
+                                e.target.value,
+                                "interests"
+                              ) // Corrected
+                          }
+                          placeholder="Interest"
+                        />
+                      </div>
+                      {formData.interests.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => handleRemoveField("interests", index)}
+                          className="ml-2"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  onClick={() => handleAddField("interests", "")} // Adding a string, not an object
+                >
+                  Add Interest
+                </Button>
+              </div>
+            </div>
+
+            {/* resume file */}
+            <div>
+              <Label htmlFor="file">Resume:{}</Label>
               <Input
-                type="text"
-                name="resumeLink"
-                value={formData.resumeLink}
-                onChange={handleChange}
-                placeholder="Upload from drive "
+                id="file"
+                type="file"
+                name="file"
+                onChange={handleFileChange}
+                accept="application/pdf"
               />
             </div>
-            {/* Save Button */}
+
+            {/* Submit */}
             <div className="flex justify-center gap-4">
               {loading ? (
                 <Button className="w-full max-w-xs bg-[#0e4d62]">
@@ -304,7 +615,8 @@ function EditStudentProfile() {
                 <Button
                   type="submit"
                   className="bg-[#0e4d62] text-white px-6 py-2"
-                >
+                  
+                  >
                   Save Changes
                 </Button>
               )}

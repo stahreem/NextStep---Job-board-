@@ -1,6 +1,8 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import getDataUri from "../utils/dataUri.js";
+import cloudinary from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
   try {
@@ -147,10 +149,12 @@ export const updateProfile = async (req, res) => {
       projects,
       interests,
     } = req.body;
-   
-    const userId = req.id;
 
-    // Fetch user by ID
+
+    const file = req.file;
+  
+
+    const userId = req.id;
     const user = await User.findById(userId);
 
     if (!user) {
@@ -160,30 +164,43 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Update shared fields
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
 
-    // Update student-specific fields only if role is "student"
+    let resumeLink;
+    let originalResumeName;
+
+    if (file) {
+      originalResumeName = file.originalname; // Get the file's original name
+      const fileUri = getDataUri(file);
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+      resumeLink = cloudResponse.secure_url;
+      console.log("Cloudinary response:", cloudResponse);
+      // if (!cloudResponse.secure_url) {
+      //   return res.status(400).json({ message: "File upload failed" });
+      // }
+    }
+
     if (user.role === "student") {
       user.studentDetails = {
-        ...user.studentDetails, // Retain existing values
+        ...user.studentDetails,
         ...(graduationStatus && { graduationStatus }),
         ...(github && { github }),
         ...(linkedin && { linkedin }),
         ...(about && { about }),
         ...(education && { education }),
-        ...(experience && { experience }), 
-        ...(skills && { skills }), 
-        ...(projects && { projects }), 
-        ...(interests && { interests }), 
+        ...(experience && { experience }),
+        ...(skills && { skills }),
+        ...(projects && { projects }),
+        ...(interests && { interests }),
+        ...(resumeLink && { resumeLink }),
+        ...(originalResumeName && { resumeName: originalResumeName }), // Save the original file name
       };
     }
-
-    // Save the updated user document
     const updatedUser = await user.save();
 
+   
     return res.status(200).json({
       message: "User profile updated successfully",
       user: updatedUser,
@@ -197,4 +214,3 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
-
