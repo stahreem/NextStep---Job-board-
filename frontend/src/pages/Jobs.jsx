@@ -1,12 +1,17 @@
+/* eslint-disable no-unused-vars */
 // import React from 'react'
 
 import FilterCard from "@/components/elements/FilterCard";
 import JobCard from "@/components/elements/JobCard";
 import Navbar from "@/components/elements/Navbar";
-
-const jobsArray = [1, 2, 3, 4, 5, 6, 7, 8,9,1,1,2,3,4,5,6,6,7];
+import useGetAllJobs from "@/hooks/useGetAllJobs";
+import { store } from "@/redux/store";
+import { useSelector } from "react-redux";
 
 function Jobs() {
+  useGetAllJobs();
+
+  const { allJobs } = useSelector((store) => store.job);
   return (
     <div className="">
       <Navbar />
@@ -16,15 +21,17 @@ function Jobs() {
           <aside className="w-full lg:w-1/5">
             <FilterCard />
           </aside>
-          
+
           {/* Job Listings Section */}
           <main className="flex-1 h-[88vh] pb-5">
-            {jobsArray.length <= 0 ? (
+            {allJobs.length <= 0 ? (
               <span className="text-center text-gray-500">Jobs Not Found</span>
             ) : (
               <div className="grid grid-cols-1 gap-2 mb-3 overflow-y-visible sm:grid-cols-2 lg:grid-cols-3">
-                {jobsArray.map((item, index) => (
-                  <JobCard key={index} />
+                {allJobs.map((item, index) => (
+                  <div key={item._id}>
+                    <JobCard key={index} job={item} />
+                  </div>
                 ))}
               </div>
             )}

@@ -176,7 +176,7 @@ export const updateProfile = async (req, res) => {
       const fileUri = getDataUri(file);
       const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
       resumeLink = cloudResponse.secure_url;
-      console.log("Cloudinary response:", cloudResponse);
+      // console.log("Cloudinary response:", cloudResponse);
       // if (!cloudResponse.secure_url) {
       //   return res.status(400).json({ message: "File upload failed" });
       // }
@@ -214,3 +214,29 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+export const getProfile = async (req, res) => {
+  try {
+    const userID = req.id; 
+    const user = await User.findOne({ _id: userID }); 
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No user found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      user,
+      success: true,
+    });
+  } catch (error) {
+    console.error("The error in get profile controller is:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
+

@@ -11,7 +11,6 @@ import axios from "axios";
 import { USER_API_END_POINT } from "../utils/Constant";
 
 function EditStudentProfile() {
-  
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
 
@@ -62,7 +61,7 @@ function EditStudentProfile() {
         interests: user?.studentDetails?.interests?.length
           ? user.studentDetails.interests
           : [""],
-          resumeLink: user?.studentDetails?.resumeLink || "",
+        resumeLink: user?.studentDetails?.resumeLink || "",
       }));
     }
   }, [user]); // Only run when user data changes
@@ -116,18 +115,13 @@ function EditStudentProfile() {
     const file = e.target.files?.[0];
     setFormData({ ...formData, file });
   };
-  
-  
+
   // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     console.log("Updated Profile Data:", formData);
-    // Uncomment to send data to the backend
     try {
-
-      
-
       const res = await axios.post(
         `${USER_API_END_POINT}/profile/update`,
         formData,
@@ -141,12 +135,10 @@ function EditStudentProfile() {
       console.log(res);
 
       if (res.data.success) {
-        toast.success(res.data.message ||  "Profile updated successfully!");
+        toast.success(res.data.message || "Profile updated successfully!");
         navigate("/student/profile");
       } else {
-        toast.error(
-          res.data.message || "Failed to update profile."
-        );
+        toast.error(res.data.message || "Failed to update profile.");
       }
     } catch (err) {
       setLoading(false);
@@ -154,8 +146,6 @@ function EditStudentProfile() {
         err.response?.data?.message || "Update failed. Please try again.";
       toast.error(errorMsg);
     }
-
-   
   };
 
   return (
@@ -502,7 +492,7 @@ function EditStudentProfile() {
               </Button>
             </div>
 
-              {/* Skills and interest Section */}
+            {/* Skills and interest Section */}
             <div className="grid grid-cols-2 gap-4">
               {/* Skills Section */}
               <div>
@@ -615,8 +605,7 @@ function EditStudentProfile() {
                 <Button
                   type="submit"
                   className="bg-[#0e4d62] text-white px-6 py-2"
-                  
-                  >
+                >
                   Save Changes
                 </Button>
               )}
