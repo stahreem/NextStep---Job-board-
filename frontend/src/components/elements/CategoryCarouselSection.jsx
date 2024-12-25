@@ -7,6 +7,9 @@ import {
     CarouselNext,
   } from "../ui/carousel";
   import { Button } from "../ui/button";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSearchQuery } from "@/redux/jobSlice";
   
   function CategoryCarouselSection() {
     const category = [
@@ -21,6 +24,15 @@ import {
       "DevOps Engineer",
       "Cybersecurity",
     ];
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleSearch = (query) => {
+        if (query.trim() === "") return;
+        dispatch(setSearchQuery(query));
+        navigate("/browse");
+        console.log("Search term submitted:", query);
+      };
   
     return (
       <div>
@@ -31,7 +43,8 @@ import {
                 key={index}
                 className="flex-none w-1/3 text-center"
               >
-                <Button variant="outline" className="w-full rounded-full">
+                <Button onClick = {() => handleSearch(cat)}
+                variant="outline" className="w-full rounded-full">
                   {cat}
                 </Button>
               </CarouselItem>

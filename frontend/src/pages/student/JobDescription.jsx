@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import Navbar from "@/components/elements/Navbar";
-import { Bookmark, Edit } from "lucide-react";
+import { ArrowLeft, Bookmark, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
@@ -8,19 +8,20 @@ import axios from "axios";
 import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from "@/utils/Constant";
 import { useDispatch, useSelector } from "react-redux";
 import { setSingleJob } from "@/redux/jobSlice";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { setLoading } from "@/redux/authSlice";
+import { Badge } from "@/components/ui/badge";
 
 function JobDescription() {
   const { id: jobID } = useParams();
   const dispatch = useDispatch();
   const { singleJob } = useSelector((store) => store.job);
   const { user } = useSelector((store) => store.auth);
-
+  const navigate = useNavigate();
   // Check if the user has already applied
   const isInitiallyApplied =
-    singleJob?.application?.some((app) => app.applicant === user?._id) || false;
+    singleJob?.application?.some((app) => app === user?._id) || false;
 
   const [isApplied, setIsApplied] = useState(isInitiallyApplied);
 
@@ -33,10 +34,12 @@ function JobDescription() {
         });
         if (res.data.success) {
           dispatch(setSingleJob(res.data.job));
-          // setIsApplied(res.data.job.applications.some(application=>application.applicant === user?._id))
+          // Update `isApplied` after fetching job details
+          setIsApplied(
+            res.data.job.application.some((app) => app.applicant === user?._id)
+          );
         }
       } catch (error) {
-        // console.error("Error applying for the job:", error);
         const errorMsg =
           error.response?.data?.message ||
           "Something went wrong. Please try again later.";
@@ -58,9 +61,12 @@ function JobDescription() {
       );
 
       if (res.data.success) {
-        setIsApplied(true); // Update the local state
-        // const updatedSingleJob = {...singleJob, applications:[...singleJob.applications,{applicant:user?._id}]}
-        // dispatch(setSingleJob(updatedSingleJob)); // helps us to real time UI update
+        setIsApplied(true); // Update local state to disable button
+        const updatedSingleJob = {
+          ...singleJob,
+          application: [...singleJob.application, { applicant: user?._id }],
+        };
+        dispatch(setSingleJob(updatedSingleJob)); // Update Redux store
         toast.success(
           res.data.message || "Application submitted successfully!"
         );
@@ -70,7 +76,6 @@ function JobDescription() {
         );
       }
     } catch (error) {
-      console.error("Error applying for the job:", error);
       const errorMsg =
         error.response?.data?.message ||
         "Something went wrong. Please try again later.";
@@ -86,21 +91,39 @@ function JobDescription() {
       <div className="flex items-center justify-center min-h-screen px-5 py-10 bg-gradient-to-br from-[#fff1eb] to-[#ace0f9]">
         <div className="relative w-full max-w-4xl p-8 bg-white rounded-lg shadow-md">
           {/* Bookmark or Edit Button */}
-          {user?.role === "student" ? (
-            <button
-              className="absolute p-2 bg-gray-100 rounded-full top-3 right-3 hover:bg-gray-200"
-              aria-label="Bookmark"
-            >
-              <Bookmark className="w-5 h-5 text-gray-600" />
-            </button>
-          ) : (
-            <button
-              className="absolute p-2 bg-gray-100 rounded-full top-3 right-16 hover:bg-gray-200"
-              aria-label="Edit"
-            >
-              <Edit className="w-5 h-5 text-gray-600" />
-            </button>
-          )}
+          <div className="flex items-center justify-between">
+            {/* Right Button */}
+            {/* Left Arrow */}
+            <ArrowLeft
+              className="w-6 h-6 text-gray-700 cursor-pointer hover:text-teal-500"
+              onClick={() =>
+                navigate(user?.role === "student" ? "/jobs" : "/admin/jobs")
+              }
+            />
+
+            {/* Right Button */}
+            {user?.role === "student" ? (
+              <button
+                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                aria-label="Bookmark"
+                onClick={() =>
+                  navigate(`/student/job/${singleJob?._id}/details`)
+                }
+              >
+                <Bookmark className="w-5 h-5 text-gray-600" />
+              </button>
+            ) : (
+              <button
+                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                aria-label="Edit"
+                onClick={() =>
+                  navigate(`/admin/job/post/update/${singleJob?._id}`)
+                }
+              >
+                <Edit className="w-5 h-5 text-gray-600" />
+              </button>
+            )}
+          </div>
 
           {/* Job Title and Company Info */}
           <div className="flex flex-col mb-6">
@@ -113,12 +136,9 @@ function JobDescription() {
             </div>
           </div>
           <div className="flex justify-end mt-[-50]">
-            {/* <img
-              className="w-32 h-32"
-              src="https://tse2.mm.bing.net/th?id=OIP.9kLadk-ff48v9vs0zQL12QHaE7&pid=Api&P=0&h=180" 
-            />*/}
+          
             <Avatar className="w-28 h-28">
-              <AvatarImage src="https://tse2.mm.bing.net/th?id=OIP.9kLadk-ff48v9vs0zQL12QHaE7&pid=Api&P=0&h=180" />
+              <AvatarImage src={singleJob?.company?.companyLogo} />
             </Avatar>
           </div>
           {/* Job Overview */}
@@ -143,20 +163,47 @@ function JobDescription() {
             </h3>
             <ul className="ml-5 space-y-2 text-sm text-gray-700 list-disc">
               <li>
-                <strong>Location:</strong> {singleJob?.location || "Remote"}
+                <strong>Location:</strong>
+                 {singleJob?.location || "Remote"}
               </li>
               <li>
-                <strong>Employment Type:</strong> {singleJob?.jobType || "N/A"}
+                <strong>Employment Type:{" "}</strong>
+                
+                 <Badge
+          style={{ backgroundColor: "#ff7878", color: "#ffffff" }}
+          className="text-xs sm:text-xs md:text-sm"
+        >
+           {singleJob?.jobType.toUpperCase() || "N/A"}
+        </Badge>
               </li>
               <li>
-                <strong>Salary:</strong> {singleJob?.salary || "N/A"} LPA
+                <strong>Salary:  {" "}</strong>
+                <Badge
+          variant="secondary"
+          style={{ backgroundColor: "#0dbfb3", color: "#ffffff" }}
+          className="text-xs sm:text-xs md:text-sm"
+        >
+          {singleJob?.salary || "N/A"} LPA
+        </Badge>
               </li>
               <li>
-                <strong>Positions Available:</strong> {singleJob?.position || 0}
+                <strong>Positions Available:</strong> 
+                <Badge
+          variant="outline"
+          className="text-xs sm:text-xs md:text-sm border-primaryAccent text-primaryAccent"
+        >
+          {singleJob?.position || 0} Positions
+        </Badge>
               </li>
               <li>
                 <strong>Total Applications:</strong>{" "}
-                {singleJob?.application?.length || 0}
+                <Badge
+          variant="outline"
+          className="text-xs sm:text-xs md:text-sm border-primaryAccent text-primaryAccent"
+        >
+           {singleJob?.application?.length || 0}  Applicants 
+        </Badge>
+               
               </li>
             </ul>
           </div>
@@ -171,15 +218,15 @@ function JobDescription() {
           <div className="mt-8">
             {user?.role === "student" && (
               <Button
-                onClick={setIsApplied ? null : applyJobHandler}
-                disabled={setIsApplied}
+                onClick={isApplied ? null : applyJobHandler} // Prevent click if already applied
+                disabled={isApplied} // Disable button based on `isApplied` state
                 className={`px-4 py-2 font-semibold rounded-md transition ${
-                  setIsApplied
+                  isApplied
                     ? "bg-gray-400 cursor-not-allowed text-gray-100"
                     : "bg-[#0e4d62] hover:bg-[#093644] text-slate-100"
                 }`}
               >
-                {setIsApplied ? "Already Applied" : "Apply Now"}
+                {isApplied ? "Already Applied" : "Apply Now"}
               </Button>
             )}
           </div>

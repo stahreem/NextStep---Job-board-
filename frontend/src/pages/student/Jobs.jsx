@@ -5,15 +5,33 @@ import FilterCard from "@/components/elements/FilterCard";
 import JobCard from "@/components/elements/JobCard";
 import Navbar from "@/components/elements/Navbar";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
-import { store } from "@/redux/store";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 function Jobs() {
   useGetAllJobs();
 
-  const { allJobs } = useSelector((store) => store.job);
+  const { allJobs, searchQuery } = useSelector((store) => store.job);
+  const [filterJobs, setFilterJobs] = useState(allJobs); // Correctly initialize state
+
+  useEffect(() => {
+    if (searchQuery) {
+      const filteredJobs = allJobs.filter((job) => {
+        return (
+          job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.salary?.toString().toLowerCase().includes(searchQuery.toLowerCase()) // Convert salary to string for filtering
+        );
+      });
+      setFilterJobs(filteredJobs);
+    } else {
+      setFilterJobs(allJobs);
+    }
+  }, [allJobs, searchQuery]);
+
   return (
-    <div className="">
+    <div>
       <Navbar />
       <section className="px-4 mx-auto mt-5 max-w-7xl sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 lg:flex-row">
@@ -24,13 +42,13 @@ function Jobs() {
 
           {/* Job Listings Section */}
           <main className="flex-1 h-[88vh] pb-5">
-            {allJobs.length <= 0 ? (
+            {filterJobs?.length <= 0 ? (
               <span className="text-center text-gray-500">Jobs Not Found</span>
             ) : (
               <div className="grid grid-cols-1 gap-2 mb-3 overflow-y-visible sm:grid-cols-2 lg:grid-cols-3">
-                {allJobs.map((item, index) => (
+                {filterJobs?.map((item) => (
                   <div key={item._id}>
-                    <JobCard key={index} job={item} />
+                    <JobCard job={item} />
                   </div>
                 ))}
               </div>

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constant";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,7 +32,7 @@ function Signup() {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
-  const { loading} = useSelector(store => store.auth )
+  const { user,loading} = useSelector(store => store.auth )
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
@@ -82,6 +82,12 @@ function Signup() {
       dispatch(setLoading(false))
     }
   };
+
+  useEffect(() => {
+    if(user){
+      navigate("/dashboard")
+    }
+  },[])
 
   return (
     <section className="min-h-screen bg-gradient-to-r from-[#fff1eb] to-[#ace0f9] flex flex-col items-center">

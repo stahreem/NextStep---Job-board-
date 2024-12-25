@@ -2,18 +2,19 @@
 import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/elements/Navbar";
-import { Pencil } from "lucide-react";
+import { Loader, Loader2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { USER_API_END_POINT } from "../utils/Constant";
+import { USER_API_END_POINT } from "../../utils/Constant";
 import { setLoading } from "@/redux/authSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { store } from "@/redux/store";
 
 function StudentProfile() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const dispatch = useDispatch();
-
+  const { loading } = useSelector((store) => store.auth);
   // Fetch updated user profile from the backend
   useEffect(() => {
     dispatch(setLoading(true));
@@ -33,9 +34,11 @@ function StudentProfile() {
     fetchUser();
   }, []);
 
-  // if (!userData) {
-  //   return <div>Loading...</div>;
-  // }
+  if (!userData) {
+    return <div className="flex items-center justify-center min-h-screen">
+    <Loader className="w-10 h-10 text-center animate-spin text-gray-500" />
+  </div>
+  }
 
   const { role, fullName, email, studentDetails } = userData;
 
@@ -152,7 +155,7 @@ function StudentProfile() {
             </div>
           )}
 
-          {studentDetails?.projects?.length > 0 && (
+          {studentDetails?.projects?.length > 0 ? (
             <div className="mb-8">
               <h3 className="mb-3 text-lg font-semibold text-[#0e4d62]">
                 Projects
@@ -178,6 +181,8 @@ function StudentProfile() {
                 ))}
               </ul>
             </div>
+          ) : (
+            <span> No </span>
           )}
 
           {studentDetails?.skills?.length > 0 && (

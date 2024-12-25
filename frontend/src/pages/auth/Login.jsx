@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { USER_API_END_POINT } from "@/utils/constant";
@@ -30,7 +30,7 @@ function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading} = useSelector(store => store.auth )
+  const {user,  loading} = useSelector(store => store.auth )
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
@@ -67,7 +67,11 @@ function Login() {
     }
   };
   
-
+useEffect(() => {
+  if(user){
+    navigate("/dashboard")
+  }
+},[]) 
 
   return (
     <section className="min-h-screen bg-gradient-to-r from-[#fff1eb] to-[#ace0f9] flex flex-col items-center">

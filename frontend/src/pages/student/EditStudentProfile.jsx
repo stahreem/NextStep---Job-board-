@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Loader } from "lucide-react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { USER_API_END_POINT } from "../utils/Constant";
+import { USER_API_END_POINT } from "../../utils/Constant";
 
 function EditStudentProfile() {
   const navigate = useNavigate();
@@ -149,14 +149,13 @@ function EditStudentProfile() {
   };
 
   return (
-    <section className="">
+    <section >
       <Navbar />
-      <div className="container px-5 py-10 mx-auto">
+      <div className=" px-5 py-10 mx-auto">
         <div className="max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-center text-[#0e4d62] mb-6">
             Edit Profile
           </h1>
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
             <div className="grid grid-cols-2 gap-4">
