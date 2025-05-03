@@ -27,6 +27,10 @@ app.use("/api/v1/job", jobRoutes);
 
 import applicationRoutes from "./routes/application.Routes.js";
 app.use("/api/v1/applications", applicationRoutes);
+
+import bookMarkRoutes from "./routes/bookMark.Routes.js";
+app.use("/api/v1/bookmark", bookMarkRoutes);
+
 // database and port
 import connectDB from "./database/connectDB.js";
 

@@ -5,11 +5,14 @@ import { Button } from "../ui/button";
 import { useDispatch } from "react-redux";
 import { setSearchQuery } from "@/redux/jobSlice";
 import { useNavigate } from "react-router-dom";
+import useGetAllJobs from "@/hooks/useGetAllJobs";
 
 function HeroSection() {
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useGetAllJobs();
 
   // Function to handle search when clicking the search button
   const handleSearch = () => {

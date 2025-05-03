@@ -3,28 +3,28 @@ import CategoryCarouselSection from "@/components/elements/CategoryCarouselSecti
 import Navbar from "@/components/elements/Navbar";
 import LatestJobs from "@/components/elements/LatestJobs";
 import Footer from "@/components/elements/Footer";
-import useGetAllJobs from "@/hooks/useGetAllJobs";
+// import useGetAllJobs from "@/hooks/useGetAllJobs";
 import { useSelector } from "react-redux";
 import { store } from "@/redux/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useGetBookmarks from "@/hooks/useGetBookmarks";
 // import React from 'react'
 
 function Dashboard() {
+  const { user } = useSelector((store) => store.auth);
+  const navigate = useNavigate();
 
-  const { user } = useSelector(store=> store.auth)
-  const navigate = useNavigate()
-  
   useEffect(() => {
-    if(user){
-      if(user.role === "recruiter"){
-        navigate("/admin/company")
-      } 
+    if (user) {
+      if (user.role === "recruiter") {
+        navigate("/admin/company");
+      }
     }
-  },[user])
+  }, [user]);
 
-  useGetAllJobs();
-
+  // useGetAllJobs();
+  useGetBookmarks();
   return (
     <div>
       <Navbar />

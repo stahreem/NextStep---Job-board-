@@ -114,6 +114,34 @@ export const getAllJobs = async (req, res) => {
       .json({ message: "Internal server error", success: false });
   }
 };
+export const getBookmarkedJobs = async (req, res) => {
+  try {
+    const userID = req.user.id; // req.user.id must be set by your auth middleware
+
+    const bookmarks = await Bookmark.find({ user: userID })
+      .populate({
+        path: "job",
+        populate: { path: "company" }, // optional: if you want company data inside job
+      })
+      .sort({ createdAt: -1 });
+
+    // Extract only the job objects from the bookmarks
+    const jobs = bookmarks.map((b) => b.job);
+
+    if (!jobs || jobs.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bookmarked jobs found", success: false });
+    }
+
+    return res.status(200).json({ jobs, success: true });
+  } catch (error) {
+    console.error("The error in getBookmarkedJobs controller is:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
+  }
+};
 
 // Get a specific job by ID
 export const getJobsById = async (req, res) => {
@@ -165,7 +193,10 @@ export const updateJobPost = async (req, res) => {
     };
 
     // Update the company details
-    const jobPost = await Job.findByIdAndUpdate(req.params.id, updateData).populate({
+    const jobPost = await Job.findByIdAndUpdate(
+      req.params.id,
+      updateData
+    ).populate({
       path: "company",
     });
 
@@ -203,7 +234,7 @@ export const deleteJobPost = async (req, res) => {
         .json({ success: false, message: "Job Post not found." });
     }
 
-    // Delete the job post 
+    // Delete the job post
     await jobPost.deleteOne();
 
     return res

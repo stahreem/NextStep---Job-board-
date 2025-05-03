@@ -35,12 +35,14 @@ function StudentProfile() {
   }, []);
 
   if (!userData) {
-    return <div className="flex items-center justify-center min-h-screen">
-    <Loader className="w-10 h-10 text-center animate-spin text-gray-500" />
-  </div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="w-10 h-10 text-center animate-spin text-gray-500" />
+      </div>
+    );
   }
-
   const { role, fullName, email, studentDetails } = userData;
+  const resumeUrl = studentDetails.resumeLink;
 
   return (
     <div>

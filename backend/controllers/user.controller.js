@@ -38,7 +38,7 @@ export const register = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log("Error in register controller ",error);
+    console.log("Error in register controller ", error);
     return res
       .status(500)
       .json({ message: "Internal server error", success: false });
@@ -118,7 +118,6 @@ export const login = async (req, res) => {
   }
 };
 
-
 export const logout = async (req, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
@@ -150,9 +149,7 @@ export const updateProfile = async (req, res) => {
       interests,
     } = req.body;
 
-
     const file = req.file;
-  
 
     const userId = req.id;
     const user = await User.findById(userId);
@@ -172,14 +169,21 @@ export const updateProfile = async (req, res) => {
     let originalResumeName;
 
     if (file) {
-      originalResumeName = file.originalname; // Get the file's original name
+      originalResumeName = file.originalname;
       const fileUri = getDataUri(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+
+      const isPDF = file.mimetype === "application/pdf";
+
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        resource_type: isPDF ? "raw" : "auto", // ⬅️ Key change
+        folder: "resumes", // optional for better organization
+        public_id: originalResumeName.split(".")[0], // optional
+      });
+
       resumeLink = cloudResponse.secure_url;
-      // console.log("Cloudinary response:", cloudResponse);
-      // if (!cloudResponse.secure_url) {
-      //   return res.status(400).json({ message: "File upload failed" });
-      // }
+      console.log("MIME Type:", file.mimetype);
+      console.log("cloudResponse:", cloudResponse);
+      // console.log("MIME Type:", file.mimetype);
     }
 
     if (user.role === "student") {
@@ -200,7 +204,6 @@ export const updateProfile = async (req, res) => {
     }
     const updatedUser = await user.save();
 
-   
     return res.status(200).json({
       message: "User profile updated successfully",
       user: updatedUser,
@@ -217,8 +220,8 @@ export const updateProfile = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
-    const userID = req.id; 
-    const user = await User.findOne({ _id: userID }); 
+    const userID = req.id;
+    const user = await User.findOne({ _id: userID });
 
     if (!user) {
       return res.status(404).json({
@@ -239,4 +242,3 @@ export const getProfile = async (req, res) => {
     });
   }
 };
-

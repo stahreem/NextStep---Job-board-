@@ -130,6 +130,13 @@ const Navbar = () => {
                           >
                             Applications
                           </Link>
+
+                          <Link
+                            to="/student/bookmark/"
+                            className="hover:text-[#023b81]"
+                          >
+                            Book Marked
+                          </Link>
                         </>
                       )}
                       <p
