@@ -3,6 +3,19 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/dataUri.js";
 import cloudinary from "../utils/cloudinary.js";
+import path from "path";
+import { exec } from "child_process";
+import { fileURLToPath } from "url";
+// import { getDataUri } from "../utils/dataUri.js"; // adjust if needed
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const scriptPath = path.join(
+  __dirname,
+  "..",
+  "resume-parser",
+  "resume_parser.py"
+);
 
 export const register = async (req, res) => {
   try {
@@ -132,6 +145,13 @@ export const logout = async (req, res) => {
   }
 };
 
+import multer from "multer";
+
+// Multer configuration to handle file upload
+const storage = multer.memoryStorage();
+export const singleUpload = multer({ storage }).single("file");
+
+// Your profile update route
 export const updateProfile = async (req, res) => {
   try {
     const {
@@ -150,7 +170,6 @@ export const updateProfile = async (req, res) => {
     } = req.body;
 
     const file = req.file;
-
     const userId = req.id;
     const user = await User.findById(userId);
 
@@ -161,6 +180,7 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    // Update basic fields
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
@@ -171,22 +191,65 @@ export const updateProfile = async (req, res) => {
     if (file) {
       originalResumeName = file.originalname;
       const fileUri = getDataUri(file);
-
       const isPDF = file.mimetype === "application/pdf";
 
       const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-        resource_type: isPDF ? "raw" : "auto", // ⬅️ Key change
-        folder: "resumes", // optional for better organization
-        public_id: originalResumeName.split(".")[0], // optional
+        resource_type: isPDF ? "raw" : "auto",
+        folder: "resumes",
+        public_id: originalResumeName.split(".")[0],
       });
 
       resumeLink = cloudResponse.secure_url;
-      console.log("MIME Type:", file.mimetype);
-      console.log("cloudResponse:", cloudResponse);
-      // console.log("MIME Type:", file.mimetype);
-    }
 
-    if (user.role === "student") {
+      // Parse the resume
+      exec(
+        `python "${scriptPath}" "${resumeLink}"`,
+        async (err, stdout, stderr) => {
+          if (err || stderr) {
+            console.error("Python script error:", err || stderr);
+            return res
+              .status(500)
+              .json({ message: "Error parsing resume", success: false });
+          }
+
+          let parsedData = {};
+          try {
+            parsedData = JSON.parse(stdout);
+          } catch (jsonErr) {
+            console.error("Failed to parse Python output:", jsonErr);
+            return res
+              .status(500)
+              .json({ message: "Failed to parse resume data", success: false });
+          }
+
+          user.studentDetails = {
+            ...user.studentDetails,
+            ...(graduationStatus && { graduationStatus }),
+            ...(github && { github }),
+            ...(linkedin && { linkedin }),
+            ...(about && { about }),
+            ...(education && { education }),
+            ...(experience && { experience }),
+            ...(skills && { skills }),
+            ...(projects && { projects }),
+            ...(interests && { interests }),
+            resumeLink,
+            resumeName: originalResumeName,
+            parsedData,
+          };
+
+          await user.save();
+
+          return res.status(200).json({
+            message: "User profile updated successfully with resume parsing",
+            user,
+            parsedData,
+            success: true,
+          });
+        }
+      );
+    } else {
+      // No resume upload — update profile directly
       user.studentDetails = {
         ...user.studentDetails,
         ...(graduationStatus && { graduationStatus }),
@@ -198,17 +261,16 @@ export const updateProfile = async (req, res) => {
         ...(skills && { skills }),
         ...(projects && { projects }),
         ...(interests && { interests }),
-        ...(resumeLink && { resumeLink }),
-        ...(originalResumeName && { resumeName: originalResumeName }), // Save the original file name
       };
-    }
-    const updatedUser = await user.save();
 
-    return res.status(200).json({
-      message: "User profile updated successfully",
-      user: updatedUser,
-      success: true,
-    });
+      await user.save();
+
+      return res.status(200).json({
+        message: "User profile updated successfully",
+        user,
+        success: true,
+      });
+    }
   } catch (error) {
     console.error("Error in updateProfile controller:", error);
     return res.status(500).json({

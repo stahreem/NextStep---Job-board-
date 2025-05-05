@@ -1,4 +1,6 @@
 import { Job } from "../models/job.model.js";
+import { Bookmark } from "../models/bookMark.model.js";
+import { exec } from "child_process";
 
 // Admin: Post a new job
 export const postJob = async (req, res) => {
@@ -46,6 +48,18 @@ export const postJob = async (req, res) => {
       company: companyID, // Ensure you are using the correct field name
       created_by: userID,
     });
+
+    // ✅ Trigger the Python parser after saving the job
+    exec(
+      `python job_parser/job_parser.py ${jobCreate._id}`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error("Error running job parser:", error);
+        } else {
+          console.log("Job parsed successfully:", stdout);
+        }
+      }
+    );
 
     return res.status(201).json({
       message: "New Job Created Successfully",
@@ -246,5 +260,30 @@ export const deleteJobPost = async (req, res) => {
       success: false,
       message: "Failed to delete Job Post. Please try again later.",
     });
+  }
+};
+
+export const createJob = async (req, res) => {
+  try {
+    const newJobData = req.body;
+
+    const job = await Job.create(newJobData);
+
+    // ✅ Trigger the Python job parser
+    exec(
+      `python3 job_parser/job_parser.py ${job._id}`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error("Error running job parser:", error);
+          return;
+        }
+        console.log("Job parsed successfully:", stdout);
+      }
+    );
+
+    res.status(201).json({ success: true, job });
+  } catch (error) {
+    console.error("Job creation failed:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

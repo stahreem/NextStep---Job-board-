@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "@/redux/authSlice";
 import { store } from "@/redux/store";
 import { Loader } from "lucide-react";
-
+import { use } from "react";
 
 function Login() {
   const [input, setInput] = useState({
@@ -30,28 +30,27 @@ function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {user,  loading} = useSelector(store => store.auth )
+  const { user, loading } = useSelector((store) => store.auth);
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-  dispatch(setLoading(true))
-    const { email, password, role } = input;
-  
-    if (!email || !password || !role) {
-      setError("All fields are required");
-      return;
-    }
-  
+      dispatch(setLoading(true));
+      const { email, password, role } = input;
+
+      if (!email || !password || !role) {
+        setError("All fields are required");
+        return;
+      }
+
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-      dispatch(setUser(res.data.user))
+      dispatch(setUser(res.data.user));
       navigate("/dashboard");
       if (res.data.success) {
         toast.success(res.data.message || "Login successful!");
@@ -60,18 +59,19 @@ function Login() {
       }
     } catch (err) {
       // Handle specific error from backend if present
-      const errorMsg = err.response?.data?.message || "Login failed. Please try again.";
+      const errorMsg =
+        err.response?.data?.message || "Login failed. Please try again.";
       toast.error(errorMsg);
-    } finally{
-      dispatch(setLoading(false))
+    } finally {
+      dispatch(setLoading(false));
     }
   };
-  
-useEffect(() => {
-  if(user){
-    navigate("/dashboard")
-  }
-},[]) 
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [use]);
 
   return (
     <section className="min-h-screen bg-gradient-to-r from-[#fff1eb] to-[#ace0f9] flex flex-col items-center">
@@ -136,14 +136,15 @@ useEffect(() => {
 
           {/* Log in Button */}
           <div className="flex justify-center mb-4">
-            {
-              loading ? <Button className="w-full max-w-xs bg-[#0e4d62]">
-                 <Loader className=" animate-spin"/> Please Wait...
-                  </Button> :
-            <Button type="submit" className="w-full max-w-xs bg-[#0e4d62]">
-              Log in
-            </Button>
-            }
+            {loading ? (
+              <Button className="w-full max-w-xs bg-[#0e4d62]">
+                <Loader className=" animate-spin" /> Please Wait...
+              </Button>
+            ) : (
+              <Button type="submit" className="w-full max-w-xs bg-[#0e4d62]">
+                Log in
+              </Button>
+            )}
           </div>
 
           {/* Signup Link */}

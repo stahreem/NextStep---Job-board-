@@ -32,7 +32,7 @@ function Signup() {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
-  const { user,loading} = useSelector(store => store.auth )
+  const { user, loading } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
@@ -42,27 +42,23 @@ function Signup() {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      dispatch(setLoading(true))
-    const { fullName, email, phoneNumber, password, role } = input;
+      dispatch(setLoading(true));
+      const { fullName, email, phoneNumber, password, role } = input;
 
-    // Basic validation
-    if (!fullName || !email || !phoneNumber || !password || !role) {
-      toast.error("All fields are required");
-      return;
-    }
+      // Basic validation
+      if (!fullName || !email || !phoneNumber || !password || !role) {
+        toast.error("All fields are required");
+        return;
+      }
 
       // console.log(input);
-      
-      const res = await axios.post(
-        `${USER_API_END_POINT}/register`,
-        input,
-        {
-          headers: {
-            "Content-Type": "application/json", 
-          },
-          withCredentials: true,
-        }
-      );
+
+      const res = await axios.post(`${USER_API_END_POINT}/register`, input, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
       // Check if registration was successful
       if (res.data.success) {
@@ -70,24 +66,26 @@ function Signup() {
         navigate("/login");
       } else {
         // Handle case where success is false
-        toast.error(res.data.message || "Registration failed. Please try again.")
+        toast.error(
+          res.data.message || "Registration failed. Please try again."
+        );
       }
     } catch (err) {
       // setError("Failed to submit the form. Please try again.");
-      const errorMsg = err.response?.data?.message || "Sign up failed. Please try again.";
+      const errorMsg =
+        err.response?.data?.message || "Sign up failed. Please try again.";
       toast.error(errorMsg);
       // console.error("Error:", err.response?.data || err.message);
-
-    } finally{
-      dispatch(setLoading(false))
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
   useEffect(() => {
-    if(user){
-      navigate("/dashboard")
+    if (user) {
+      navigate("/dashboard");
     }
-  },[])
+  }, [user]);
 
   return (
     <section className="min-h-screen bg-gradient-to-r from-[#fff1eb] to-[#ace0f9] flex flex-col items-center">
@@ -163,7 +161,11 @@ function Signup() {
 
           {/* Select User Type */}
           <div className="mb-6">
-            <Select onValueChange={(value) => setInput((prev) => ({ ...prev, role: value }))}>
+            <Select
+              onValueChange={(value) =>
+                setInput((prev) => ({ ...prev, role: value }))
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Role" />
               </SelectTrigger>
@@ -176,11 +178,17 @@ function Signup() {
 
           {/* Sign Up Button */}
           <div className="flex justify-center mb-4">
-       {   loading ? <Button className="w-full max-w-xs bg-[#0e4d62]"> <Loader className=" animate-spin"/>Please Wait </Button> :
-            <Button type="submit" className="w-full max-w-xs bg-[#0e4d62]">
-              Sign Up
-            </Button>
-}
+            {loading ? (
+              <Button className="w-full max-w-xs bg-[#0e4d62]">
+                {" "}
+                <Loader className=" animate-spin" />
+                Please Wait{" "}
+              </Button>
+            ) : (
+              <Button type="submit" className="w-full max-w-xs bg-[#0e4d62]">
+                Sign Up
+              </Button>
+            )}
           </div>
 
           {/* Login Link */}
