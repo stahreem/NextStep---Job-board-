@@ -1,14 +1,12 @@
-# job_parser/job_parser.py
-
 from pymongo import MongoClient
 from bson import ObjectId
 import spacy
-import re
 import json
+import sys
 
 # Connect to MongoDB
-client = MongoClient("mongodb://localhost:27017/")
-db = client["your_db_name"]
+client = MongoClient("mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client["test"]  # Replace with your actual DB name
 jobs_collection = db["jobs"]
 companies_collection = db["companies"]
 
@@ -16,7 +14,10 @@ companies_collection = db["companies"]
 nlp = spacy.load("en_core_web_sm")
 
 # Predefined skills
-SKILLS_DB = ['python', 'java', 'c++', 'react', 'node.js', 'mongodb', 'express', 'sql', 'html', 'css', 'javascript', 'flutter', 'aws']
+SKILLS_DB = [
+    'python', 'java', 'c++', 'react', 'node.js', 'mongodb', 'express',
+    'sql', 'html', 'css', 'javascript', 'flutter', 'aws'
+]
 
 def extract_company(company_id):
     if isinstance(company_id, ObjectId):
@@ -44,15 +45,14 @@ def parse_job_details(job_id_str):
     if not job:
         return None
 
-    # Handle list in 'requirements'
-    requirements_text = " ".join(job.get("requirements", [])) if isinstance(job.get("requirements"), list) else str(job.get("requirements", ""))
+    requirements = job.get("requirements", [])
+    requirements_text = " ".join(requirements) if isinstance(requirements, list) else str(requirements)
     combined_text = str(job.get("description", "")) + " " + requirements_text
 
     title = extract_title(combined_text)
     company_name = extract_company(job.get("company"))
     doc = nlp(combined_text)
 
-    # Extract location from NLP if not already present
     location = job.get("location", "")
     for ent in doc.ents:
         if ent.label_ == "GPE":
@@ -69,8 +69,14 @@ def parse_job_details(job_id_str):
         "tags": [title] + extract_skills(combined_text)[:3] + [location]
     }
 
-    # Optionally, store parsed data in DB (e.g., in a `parsedJobs` collection or as a field in the same job doc)
-    db["parsedJobs"].insert_one({**parsed_data, "jobId": job["_id"]})
-
     return parsed_data
 
+# Main entry point
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
+    job_id = sys.argv[1]
+    result = parse_job_details(job_id)
+    if result:
+        print(json.dumps(result))  # ONLY JSON OUTPUT

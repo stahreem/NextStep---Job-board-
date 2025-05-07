@@ -22,7 +22,7 @@ const jobSchema = new mongoose.Schema(
     },
     experienceLevel: {
       type: String,
-      enum: ["fresher", "intermediate", "senior","superSenior"],
+      enum: ["fresher", "intermediate", "senior", "superSenior"],
       required: true,
     },
     location: {
@@ -54,6 +54,10 @@ const jobSchema = new mongoose.Schema(
         ref: "Application",
       },
     ],
+    parsed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

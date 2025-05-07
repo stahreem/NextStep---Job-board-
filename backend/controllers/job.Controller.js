@@ -1,8 +1,17 @@
 import { Job } from "../models/job.model.js";
 import { Bookmark } from "../models/bookMark.model.js";
 import { exec } from "child_process";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import { ParsedJob } from "../models/parsedJobData.model.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const jobScriptPath = path.join(__dirname, "..", "job_parser", "job_parser.py");
 
 // Admin: Post a new job
+
 export const postJob = async (req, res) => {
   try {
     const {
@@ -18,7 +27,6 @@ export const postJob = async (req, res) => {
     } = req.body;
     const userID = req.id;
 
-    // Validate input
     if (
       !title ||
       !description ||
@@ -35,7 +43,6 @@ export const postJob = async (req, res) => {
         .json({ message: "Fill all the required fields", success: false });
     }
 
-    // Create new job
     const jobCreate = await Job.create({
       title,
       description,
@@ -45,32 +52,59 @@ export const postJob = async (req, res) => {
       location,
       jobType,
       position,
-      company: companyID, // Ensure you are using the correct field name
+      company: companyID,
       created_by: userID,
     });
 
-    // ✅ Trigger the Python parser after saving the job
+    // ✅ Trigger parser and store parsed data
     exec(
-      `python job_parser/job_parser.py ${jobCreate._id}`,
-      (error, stdout, stderr) => {
+      `python "${jobScriptPath}" "${jobCreate._id}"`,
+      async (error, stdout, stderr) => {
         if (error) {
-          console.error("Error running job parser:", error);
-        } else {
-          console.log("Job parsed successfully:", stdout);
+          console.error("Error executing script:", error);
+          return res.status(201).json({
+            message: "Job created, but parsing failed.",
+            jobCreate,
+            success: true,
+          });
+        }
+
+        try {
+          const parsedData = JSON.parse(stdout);
+          await ParsedJob.create({
+            jobId: jobCreate._id,
+            parsed_tags: parsedData.tags,
+            parsed_skills: parsedData.skills_required,
+            parsed_description: parsedData.description,
+            parsed_company: parsedData.company,
+            parsed_title: parsedData.title,
+            parsed_location: parsedData.location,
+            parsed_jobType: parsedData.jobType,
+          });
+
+          await Job.findByIdAndUpdate(jobCreate._id, { parsed: true });
+
+          const updatedJob = await Job.findById(jobCreate._id);
+          res.status(200).json({
+            message: "New Job Created and Parsed Successfully",
+            jobCreate: updatedJob,
+            success: true,
+          });
+        } catch (e) {
+          console.error("Failed to save parsed data:", e);
+          res.status(201).json({
+            message: "Job created, but saving parsed data failed.",
+            jobCreate,
+            success: true,
+          });
         }
       }
     );
-
-    return res.status(201).json({
-      message: "New Job Created Successfully",
-      jobCreate,
-      success: true,
-    });
   } catch (error) {
-    console.error("The error in job post controller is:", error);
+    console.error("Post Job Error:", error);
     return res
       .status(500)
-      .json({ message: "Internal server error", success: false });
+      .json({ message: "Internal Server Error", success: false });
   }
 };
 
@@ -78,10 +112,8 @@ export const postJob = async (req, res) => {
 export const getAdminJobs = async (req, res) => {
   try {
     const adminId = req.id;
-    const jobs = await Job.find({ created_by: adminId }).populate({
-      path: "company",
-      createdAt: -1,
-    });
+
+    const jobs = await Job.find({ created_by: adminId }).populate("company");
 
     if (!jobs || jobs.length === 0) {
       return res
@@ -89,9 +121,51 @@ export const getAdminJobs = async (req, res) => {
         .json({ message: "No job posts found", success: false });
     }
 
-    return res.status(200).json({ jobs, success: true });
+    for (const job of jobs) {
+      const alreadyParsed = await ParsedJob.findOne({ jobId: job._id });
+      if (!job.parsed && !alreadyParsed) {
+        exec(
+          `python "${jobScriptPath}" "${job._id}"`,
+          async (err, stdout, stderr) => {
+            if (err || stderr) {
+              console.error(`Error parsing job ${job._id}:`, err || stderr);
+              return;
+            }
+
+            try {
+              const parsedData = JSON.parse(stdout);
+              await ParsedJob.create({
+                jobId: job._id,
+                parsed_tags: parsedData.tags,
+                parsed_skills: parsedData.skills_required,
+                parsed_description: parsedData.description,
+                parsed_company: parsedData.company,
+                parsed_title: parsedData.title,
+                parsed_location: parsedData.location,
+                parsed_jobType: parsedData.jobType,
+              });
+
+              await Job.findByIdAndUpdate(job._id, { parsed: true });
+              console.log(`Parsed data for job ${job._id} saved.`);
+            } catch (e) {
+              console.error(`Failed to parse job ${job._id}:`, e);
+            }
+          }
+        );
+      }
+    }
+
+    const parsedJobs = await ParsedJob.find({
+      jobId: { $in: jobs.map((job) => job._id) },
+    });
+
+    return res.status(200).json({
+      jobs,
+      parsedJobs,
+      success: true,
+    });
   } catch (error) {
-    console.error("The error in get Admin Jobs controller is:", error);
+    console.error("The error in getAdminJobs is:", error);
     return res
       .status(500)
       .json({ message: "Internal server error", success: false });
@@ -101,7 +175,6 @@ export const getAdminJobs = async (req, res) => {
 // Students: Get all available jobs
 export const getAllJobs = async (req, res) => {
   try {
-    // Filter jobs based on keyword
     const keyword = req.query.keyword || "";
     const query = {
       $or: [
@@ -111,7 +184,7 @@ export const getAllJobs = async (req, res) => {
     };
 
     const jobs = await Job.find(query)
-      .populate({ path: "company" })
+      .populate("company")
       .sort({ createdAt: -1 });
 
     if (!jobs || jobs.length === 0) {
@@ -120,14 +193,57 @@ export const getAllJobs = async (req, res) => {
         .json({ message: "No job posts found", success: false });
     }
 
-    return res.status(200).json({ jobs, success: true });
+    for (const job of jobs) {
+      const alreadyParsed = await ParsedJob.findOne({ jobId: job._id });
+      if (!job.parsed && !alreadyParsed) {
+        exec(
+          `python "${jobScriptPath}" "${job._id}"`,
+          async (err, stdout, stderr) => {
+            if (err || stderr) {
+              console.error(`Error parsing job ${job._id}:`, err || stderr);
+              return;
+            }
+
+            try {
+              const parsedData = JSON.parse(stdout);
+              await ParsedJob.create({
+                jobId: job._id,
+                parsed_tags: parsedData.tags,
+                parsed_skills: parsedData.skills_required,
+                parsed_description: parsedData.description,
+                parsed_company: parsedData.company,
+                parsed_title: parsedData.title,
+                parsed_location: parsedData.location,
+                parsed_jobType: parsedData.jobType,
+              });
+
+              await Job.findByIdAndUpdate(job._id, { parsed: true });
+              console.log(`Parsed data for job ${job._id} saved.`);
+            } catch (e) {
+              console.error(`Failed to parse job ${job._id}:`, e);
+            }
+          }
+        );
+      }
+    }
+
+    const parsedJobs = await ParsedJob.find({
+      jobId: { $in: jobs.map((job) => job._id) },
+    });
+
+    return res.status(200).json({
+      jobs,
+      parsedJobs,
+      success: true,
+    });
   } catch (error) {
-    console.error("The error in get All Jobs controller is:", error);
+    console.error("Get All Jobs Error:", error);
     return res
       .status(500)
-      .json({ message: "Internal server error", success: false });
+      .json({ message: "Internal Server Error", success: false });
   }
 };
+
 export const getBookmarkedJobs = async (req, res) => {
   try {
     const userID = req.user.id; // req.user.id must be set by your auth middleware

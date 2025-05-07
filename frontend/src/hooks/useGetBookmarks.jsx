@@ -20,8 +20,9 @@ function useGetBookmarks() {
           dispatch(setBookmarkedJobs(res.data.jobs));
         }
       } catch (err) {
-        toast.error("Failed to fetch bookmarks");
+        // toast.error("Failed to fetch bookmarks");
         console.log(err);
+        dispatch(setBookmarkedJobs([]));
       }
     };
     fetchBookmarkedIds();
