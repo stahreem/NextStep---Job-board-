@@ -2,12 +2,20 @@ import sys
 import requests
 import spacy
 import re
+import json
 from PyPDF2 import PdfReader
+from pymongo import MongoClient
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
 
-# Predefined skills list (you can expand this)
+# MongoDB setup
+MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(MONGO_URI)
+db = client["test"]  # use your DB name here
+collection = db["parsed_resumes"]
+
+# Predefined skills list
 SKILLS_DB = [
     'python', 'java', 'c++', 'react', 'node.js', 'mongodb',
     'express', 'sql', 'html', 'css', 'javascript', 'flutter', 'aws',
@@ -58,15 +66,18 @@ def extract_experience(text):
     return experience
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python resume_parser.py <resume_url>")
+    if len(sys.argv) < 3:
+        print("Usage: python resume_parser.py <resume_url> <user_id>")
         sys.exit(1)
 
     url = sys.argv[1]
+    user_id = sys.argv[2]
+
     text = extract_text_from_pdf(url)
     doc = nlp(text)
 
     data = {
+        "user": user_id,
         "name": extract_name(doc),
         "email": extract_email(text),
         "phone": extract_phone(text),
@@ -75,8 +86,14 @@ def main():
         "experience": extract_experience(text),
     }
 
-    print(json.dumps(data))
+    # Upsert: update if user resume exists, else insert new
+    collection.update_one(
+        {"user": user_id},
+        {"$set": data},
+        upsert=True
+    )
+
+    print(json.dumps({"message": "Resume parsed and saved successfully", "user": user_id}))
 
 if __name__ == "__main__":
-    import json
     main()

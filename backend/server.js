@@ -38,7 +38,7 @@ import bookMarkRoutes from "./routes/bookMark.Routes.js";
 app.use("/api/v1/bookmark", bookMarkRoutes);
 
 import recommendationsRoutes from "./routes/recommendations.Routes.js";
-app.use("/api/v1/recommendations", recommendationsRoutes); // Fix: Added leading slash
+app.use("/api/v1", recommendationsRoutes); // Fix: Added leading slash
 
 import resumeRoutes from "./routes/resume.Routes.js";
 app.use("/api/v1/resume", resumeRoutes);
