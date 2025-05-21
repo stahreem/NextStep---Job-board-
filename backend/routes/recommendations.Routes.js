@@ -1,8 +1,12 @@
 import express from "express";
-import { getRecommendations } from "../controllers/recommendations.Controller.js";
+import {
+  getRecommendations,
+  recommendJobs,
+} from "../controllers/recommendations.Controller.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 const router = express.Router();
 
-router.get("/", isAuthenticated, getRecommendations);
+router.get("/recommendations", isAuthenticated, getRecommendations);
+router.get("/recommend", isAuthenticated, recommendJobs);
 
 export default router;
