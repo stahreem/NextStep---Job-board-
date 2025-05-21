@@ -137,6 +137,12 @@ const Navbar = () => {
                           >
                             Book Marked
                           </Link>
+                          <Link
+                            to="/student/recommendations/"
+                            className="hover:text-[#023b81]"
+                          >
+                            Recommendations
+                          </Link>
                         </>
                       )}
                       <p

@@ -23,6 +23,7 @@ import Applicants from "./pages/admin/Applicants";
 import ProtectedRoute from "./pages/admin/ProtectedRoute";
 import UpdateJob from "./pages/admin/UpdateJob";
 import BookMark from "./pages/student/BookMark";
+import Recommendation from "./pages/student/Recommendation";
 
 const appRouter = createBrowserRouter([
   {
@@ -68,6 +69,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/student/bookmark/",
     element: <BookMark />,
+  },
+  {
+    path: "/student/recommendations/",
+    element: <Recommendation />,
   },
   // admin
   {

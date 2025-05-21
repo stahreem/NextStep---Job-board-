@@ -1,13 +1,14 @@
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Job } from "../models/job.model.js"; // Adjust path if necessary
 
 // Get current module path (for ES6)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// through svd
-export const getRecommendations = (req, res) => {
+// ===================== 🔁 SVD-BASED RECOMMENDATIONS =====================
+export const getRecommendations = async (req, res) => {
   const userId = req.id;
   console.log("✅ Authenticated User ID:", userId);
 
@@ -31,7 +32,7 @@ export const getRecommendations = (req, res) => {
     errorOutput += data.toString();
   });
 
-  pythonProcess.on("close", (code) => {
+  pythonProcess.on("close", async (code) => {
     if (code !== 0) {
       console.error("❌ Python script exited with code", code);
       console.error("stderr:", errorOutput);
@@ -39,25 +40,27 @@ export const getRecommendations = (req, res) => {
     }
 
     try {
-      const recommendations = JSON.parse(result);
-      return res.status(200).json({ recommendations });
+      const recommendedJobIds = JSON.parse(result); // job IDs only
+      const jobs = await Job.find({ _id: { $in: recommendedJobIds } }).populate(
+        "company"
+      );
+
+      return res.status(200).json({ recommendations: jobs });
     } catch (err) {
-      console.error("❌ Failed to parse Python output:", result);
+      console.error("❌ Failed to process job recommendations:", err);
       return res
         .status(500)
-        .json({ error: "Failed to parse recommendations." });
+        .json({ error: "Failed to fetch recommended job details." });
     }
   });
 };
 
-// through tfidf-cosine
-
+// ===================== 📄 TF-IDF COSINE-BASED RECOMMENDATIONS =====================
 export const recommendJobs = async (req, res) => {
   try {
     const userId = req.id;
 
     const scriptPath = path.resolve("recommend_jobs/recommend_jobs.py");
-
     const python = spawn("python", [scriptPath, userId]);
 
     let result = "";
@@ -71,24 +74,62 @@ export const recommendJobs = async (req, res) => {
       errorData += data.toString();
     });
 
-    python.on("close", (code) => {
+    python.on("close", async (code) => {
       if (code !== 0 || errorData) {
-        return res.status(500).json({ success: false, error: errorData });
+        console.error("Python script error:", errorData || `Exit code ${code}`);
+        return res.status(500).json({
+          success: false,
+          error: "Error occurred while running the recommendation script.",
+          details: errorData,
+        });
       }
 
       try {
-        const recommendations = JSON.parse(result);
+        const parsedResult = JSON.parse(result.trim());
+
+        if (!parsedResult.success) {
+          return res.status(404).json({
+            success: false,
+            error: parsedResult.error || "No recommendations found.",
+          });
+        }
+
+        const recommendedJobIds = parsedResult.recommendations.map(
+          (rec) => rec.jobId
+        );
+
+        if (
+          !Array.isArray(recommendedJobIds) ||
+          recommendedJobIds.length === 0
+        ) {
+          return res.status(200).json({
+            success: true,
+            data: [],
+            message: "No job recommendations found.",
+          });
+        }
+
+        const jobs = await Job.find({
+          _id: { $in: recommendedJobIds },
+        }).populate("company");
+
         return res.status(200).json({
           success: true,
-          data: recommendations,
+          data: jobs,
         });
       } catch (err) {
-        return res
-          .status(500)
-          .json({ success: false, error: "JSON parsing error" });
+        console.error("Failed to parse or fetch job recommendations:", err);
+        return res.status(500).json({
+          success: false,
+          error: "Failed to parse or fetch job recommendations.",
+        });
       }
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: "Server error" });
+    console.error("Unexpected server error:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Unexpected server error while recommending jobs.",
+    });
   }
 };

@@ -32,10 +32,6 @@ def fetch_interaction_data():
 
     return pd.DataFrame(data, columns=["UserID", "JobID", "InteractionValue"])
 
-def fetch_job_titles():
-    jobs = db["jobs"].find({}, {"_id": 1, "title": 1})
-    return {str(job["_id"]): job.get("title", "Untitled Job") for job in jobs}
-
 def train_svd(df, n_components=5):
     interaction_matrix = df.pivot_table(
         index='UserID',
@@ -68,9 +64,6 @@ if __name__ == "__main__":
     df = fetch_interaction_data()
     interaction_matrix, approx_df = train_svd(df)
     recommendations = recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5)
-    job_titles_map = fetch_job_titles()
     
-    recommendation_titles = [job_titles_map.get(job_id, f"Unknown Job ID: {job_id}") for job_id in recommendations]
-
-    # 🔁 This is important: Return a JSON string
-    print(json.dumps(recommendation_titles))
+    # ✅ Directly print job IDs as JSON
+    print(json.dumps(recommendations))

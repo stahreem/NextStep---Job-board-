@@ -8,5 +8,6 @@ export const APPLICATION_API_END_POINT =
 export const COMPANY_API_END_POINT = "http://localhost:8000/api/v1/company";
 
 export const BOOKMARK_API_END_POINT = "http://localhost:8000/api/v1/bookmark";
+export const RECOMMEND_API_END_POINT = "http://localhost:8000/api/v1";
 // http://localhost:8000/api/v1/auth/register
 // http://localhost:8000/api/v1/job/get
