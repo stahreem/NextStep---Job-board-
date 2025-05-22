@@ -20,6 +20,7 @@ import { setLoading, setUser } from "@/redux/authSlice";
 import { store } from "@/redux/store";
 import { Loader } from "lucide-react";
 import { use } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 function Login() {
   const [input, setInput] = useState({
@@ -34,6 +35,8 @@ function Login() {
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -102,19 +105,24 @@ function Login() {
           </div>
 
           {/* Password */}
-          <div className="mb-4">
-            <Label htmlFor="password" className="sr-only">
-              Password
-            </Label>
+
+          <div className="relative mb-4">
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               name="password"
               value={input.password}
               onChange={changeEventHandler}
               placeholder="Password"
-              className="w-full focus:ring-0 focus:outline-none"
+              className="w-full pr-10"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute -translate-y-1/2 right-3 top-1/2"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
           {/* Select User Type */}

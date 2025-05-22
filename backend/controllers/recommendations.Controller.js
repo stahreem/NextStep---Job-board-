@@ -133,3 +133,57 @@ export const recommendJobs = async (req, res) => {
     });
   }
 };
+
+// ===================== 🔁 FIT SCORE FROM PYTHON SCRIPT =====================
+export const getFitScore = async (req, res) => {
+  const { userId, jobId } = req.params; // ✅ Now pulled from URL params
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
+  if (!jobId) {
+    return res.status(400).json({ error: "Job ID is required" });
+  }
+
+  const pythonPath = "python"; // or "python3"
+  const scriptPath = path.join(__dirname, "../ml_algorithms/fit_score.py");
+
+  const pythonProcess = spawn(pythonPath, [scriptPath, userId, jobId]);
+
+  let result = "";
+  let errorOutput = "";
+
+  pythonProcess.stdout.on("data", (data) => {
+    result += data.toString();
+  });
+
+  pythonProcess.stderr.on("data", (data) => {
+    errorOutput += data.toString();
+  });
+
+  pythonProcess.on("close", async (code) => {
+    if (code !== 0) {
+      console.error("❌ Python script exited with code", code);
+      console.error("stderr:", errorOutput);
+      return res.status(500).json({ error: "Fit score calculation failed." });
+    }
+
+    try {
+      const recommendedScore = JSON.parse(result); // Make sure Python returns valid JSON
+      console.log("✅ Fit Score:", recommendedScore.fit_score);
+
+      return res.status(200).json({
+        success: true,
+        userId,
+        jobId,
+        recommendedScore,
+      });
+    } catch (err) {
+      console.error("❌ Failed to parse fit score result:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to parse fit score result." });
+    }
+  });
+};

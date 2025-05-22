@@ -11,12 +11,19 @@ import { useSelector, useDispatch } from "react-redux";
 import { CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
-import { APPLICATION_API_END_POINT } from "@/utils/Constant";
+import {
+  APPLICATION_API_END_POINT,
+  FIT_SCORE_API_END_POINT,
+} from "@/utils/Constant";
 import { setApplication } from "@/redux/applicationSlice";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 function ApplicationTable() {
   const dispatch = useDispatch();
   const { applicants } = useSelector((store) => store.application);
+  const { id: jobId } = useParams(); // Job ID from URL
+  const [fitScores, setFitScores] = useState({}); // { userId: score }
 
   const statusHandler = async (status, id) => {
     try {
@@ -28,7 +35,6 @@ function ApplicationTable() {
       if (res.data.success) {
         toast.success(res.data.message || `Application ${status}`);
 
-        
         const updatedApplicants = applicants.map((app) =>
           app._id === id ? { ...app, status } : app
         );
@@ -39,6 +45,57 @@ function ApplicationTable() {
         error.response?.data?.message || "Failed to update status. Try again."
       );
     }
+  };
+
+  useEffect(() => {
+    const fetchFitScores = async () => {
+      const scores = {};
+
+      for (const applicant of applicants) {
+        const userId = String(applicant?.applicant?._id);
+        if (!userId) continue;
+        console.log(
+          "Applicants list:",
+          applicants.map((a) => a?.applicant?._id)
+        );
+        try {
+          const res = await axios.get(
+            `${FIT_SCORE_API_END_POINT}/${jobId}/${userId}`
+          );
+          // if (res.data.success) {
+          //   const score = res.data.recommendedScore.fit_score;
+          //   scores[userId] = score;
+          // } else {
+          //   scores[userId] = null;
+          // }
+          if (
+            res.data.success &&
+            res.data.recommendedScore?.fit_score !== undefined
+          ) {
+            const score = res.data.recommendedScore.fit_score;
+            scores[userId] = score;
+          } else {
+            scores[userId] = null; // Will show "Not Calculated"
+          }
+        } catch (error) {
+          scores[userId] = null;
+          console.error("Error fetching fit score for user:", userId, error);
+        }
+      }
+
+      console.log("Final fit scores map:", scores);
+      setFitScores(scores); // Set state once
+    };
+
+    if (applicants.length) fetchFitScores();
+  }, [applicants, jobId]);
+
+  const getColorClass = (score) => {
+    if (score > 80) return "text-green-600 font-bold";
+    if (score > 65) return "text-lime-500 font-semibold";
+    if (score > 50) return "text-yellow-500 font-medium";
+    if (score > 35) return "text-orange-500 font-medium";
+    return "text-red-500 font-semibold";
   };
 
   return (
@@ -53,6 +110,7 @@ function ApplicationTable() {
               <TableHead>Email</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Resume</TableHead>
+              <TableHead>Fit Score</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -87,6 +145,30 @@ function ApplicationTable() {
                       <span>Not Uploaded</span>
                     )}
                   </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const userId = String(app?.applicant?._id);
+                      const score = fitScores?.[userId];
+
+                      console.log(
+                        "Rendering cell for:",
+                        userId,
+                        "score:",
+                        score
+                      );
+
+                      if (typeof score === "number") {
+                        return (
+                          <span className={getColorClass(score)}>{score}%</span>
+                        );
+                      } else {
+                        return (
+                          <span className="italic text-gray-400">Pending</span>
+                        );
+                      }
+                    })()}
+                  </TableCell>
+
                   <TableCell>
                     {app?.status === "accepted" ? (
                       <span className="text-green-600">Accepted</span>

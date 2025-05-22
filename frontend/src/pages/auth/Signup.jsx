@@ -1,5 +1,11 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { toast } from "sonner";
+import { Loader, Eye, EyeOff } from "lucide-react";
+
 import Navbar from "@/components/elements/Navbar";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,16 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constant";
-import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-// eslint-disable-next-line no-unused-vars
-import { store } from "@/redux/store";
-import { Loader } from "lucide-react";
 
 function Signup() {
   const [input, setInput] = useState({
@@ -28,140 +26,114 @@ function Signup() {
     password: "",
     role: "",
   });
-  // const [error, setError] = useState("");
-  const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, loading } = useSelector((store) => store.auth);
 
-  const changeEventHandler = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setInput((prev) => ({ ...prev, [name]: value }));
   };
 
-  const submitHandler = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { fullName, email, phoneNumber, password, role } = input;
+    if (!fullName || !email || !phoneNumber || !password || !role) {
+      toast.error("All fields are required");
+      return;
+    }
+
     try {
       dispatch(setLoading(true));
-      const { fullName, email, phoneNumber, password, role } = input;
-
-      // Basic validation
-      if (!fullName || !email || !phoneNumber || !password || !role) {
-        toast.error("All fields are required");
-        return;
-      }
-
-      // console.log(input);
-
       const res = await axios.post(`${USER_API_END_POINT}/register`, input, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
 
-      // Check if registration was successful
       if (res.data.success) {
         toast.success(res.data.message || "Registration successful!");
         navigate("/login");
       } else {
-        // Handle case where success is false
-        toast.error(
-          res.data.message || "Registration failed. Please try again."
-        );
+        toast.error(res.data.message || "Registration failed.");
       }
     } catch (err) {
-      // setError("Failed to submit the form. Please try again.");
-      const errorMsg =
+      const msg =
         err.response?.data?.message || "Sign up failed. Please try again.";
-      toast.error(errorMsg);
-      // console.error("Error:", err.response?.data || err.message);
+      toast.error(msg);
     } finally {
       dispatch(setLoading(false));
     }
   };
 
   useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user]);
+    if (user) navigate("/dashboard");
+  }, [user, navigate]);
 
   return (
     <section className="min-h-screen bg-gradient-to-r from-[#fff1eb] to-[#ace0f9] flex flex-col items-center">
       <Navbar />
-      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto mt-10 bg-[#f7f7f7] rounded-lg shadow-lg p-6 md:p-8 lg:p-10 flex justify-center items-center">
-        <form className="w-full" onSubmit={submitHandler}>
-          <h1 className="mb-5 text-xl font-bold text-center md:text-2xl lg:text-3xl">
-            Sign Up
-          </h1>
-
-          {/* Error Message
-          {error && <p className="mb-4 text-center text-red-500">{error}</p>} */}
+      <div className="w-full max-w-md p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg md:max-w-lg lg:max-w-xl md:p-8">
+        <form onSubmit={handleSubmit} className="w-full">
+          <h1 className="mb-5 text-2xl font-bold text-center">Sign Up</h1>
 
           {/* Name */}
           <div className="mb-4">
-            <Label htmlFor="name" className="sr-only">
-              Name
-            </Label>
             <Input
               type="text"
-              value={input.fullName}
               name="fullName"
-              onChange={changeEventHandler}
-              placeholder="John"
-              className="w-full focus:ring-0 focus:outline-none"
+              value={input.fullName}
+              onChange={handleChange}
+              placeholder="Full Name"
             />
           </div>
 
           {/* Email */}
           <div className="mb-4">
-            <Label htmlFor="email" className="sr-only">
-              Email
-            </Label>
             <Input
               type="email"
-              value={input.email}
               name="email"
-              onChange={changeEventHandler}
-              placeholder="john@mail.com"
-              className="w-full focus:ring-0 focus:outline-none"
+              value={input.email}
+              onChange={handleChange}
+              placeholder="Email"
             />
           </div>
 
-          {/* Phone Number */}
+          {/* Phone */}
           <div className="mb-4">
-            <Label htmlFor="phone" className="sr-only">
-              Phone
-            </Label>
             <Input
               type="text"
-              value={input.phoneNumber}
               name="phoneNumber"
-              onChange={changeEventHandler}
-              placeholder="9876543210"
-              className="w-full focus:ring-0 focus:outline-none"
+              value={input.phoneNumber}
+              onChange={handleChange}
+              placeholder="Phone Number"
             />
           </div>
 
-          {/* Password */}
-          <div className="mb-4">
-            <Label htmlFor="password" className="sr-only">
-              Password
-            </Label>
+          {/* Password + Toggle */}
+          <div className="relative mb-4">
             <Input
-              type="password"
-              value={input.password}
+              type={showPassword ? "text" : "password"}
               name="password"
-              onChange={changeEventHandler}
+              value={input.password}
+              onChange={handleChange}
               placeholder="Password"
-              className="w-full focus:ring-0 focus:outline-none"
             />
+            <button
+              type="button"
+              className="absolute text-gray-500 top-2 right-3"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
-          {/* Select User Type */}
+          {/* Role */}
           <div className="mb-6">
             <Select
+              value={input.role}
               onValueChange={(value) =>
                 setInput((prev) => ({ ...prev, role: value }))
               }
@@ -176,23 +148,22 @@ function Signup() {
             </Select>
           </div>
 
-          {/* Sign Up Button */}
-          <div className="flex justify-center mb-4">
-            {loading ? (
-              <Button className="w-full max-w-xs bg-[#0e4d62]">
-                {" "}
-                <Loader className=" animate-spin" />
-                Please Wait{" "}
-              </Button>
-            ) : (
-              <Button type="submit" className="w-full max-w-xs bg-[#0e4d62]">
-                Sign Up
-              </Button>
-            )}
+          {/* Submit */}
+          <div className="mb-4">
+            <Button type="submit" className="w-full bg-[#0e4d62]">
+              {loading ? (
+                <>
+                  <Loader className="mr-2 animate-spin" />
+                  Please Wait
+                </>
+              ) : (
+                "Sign Up"
+              )}
+            </Button>
           </div>
 
           {/* Login Link */}
-          <p className="text-xs text-center text-slate-400 md:text-base">
+          <p className="text-sm text-center text-gray-500">
             Already have an account?{" "}
             <Link to="/login" className="text-[#0dbfb3] hover:underline">
               Log in

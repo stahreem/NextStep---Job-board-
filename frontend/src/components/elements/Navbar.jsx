@@ -20,9 +20,11 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await axios.post(`${USER_API_END_POINT}/logout`, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        `${USER_API_END_POINT}/logout`,
+        {},
+        { withCredentials: true }
+      );
 
       if (res.data.success) {
         dispatch(setUser(null));
@@ -33,7 +35,7 @@ const Navbar = () => {
       }
     } catch (err) {
       const errorMsg =
-        err.response?.data?.message || "Update failed. Please try again.";
+        err.response?.data?.message || "Logout failed. Please try again.";
       toast.error(errorMsg);
     }
   };
@@ -41,16 +43,16 @@ const Navbar = () => {
   return (
     <nav className="top-0 w-full p-4 bg-white shadow-md">
       <div className="flex items-center justify-between h-12 mx-auto max-w-7xl">
-        {/* Left side - Brand */}
+        {/* Brand */}
         <div>
           <Link to="/dashboard" className="text-xl font-bold text-gray-900">
             Next<span className="text-[#0dbfb3]">Step</span>
           </Link>
         </div>
 
-        {/* Right side */}
+        {/* Right Side */}
         <div className="flex items-center gap-6 pr-4">
-          {/* Large Screen Links */}
+          {/* Large screen links */}
           {user && (
             <ul className="items-center hidden gap-6 font-medium md:flex">
               {user.role === "recruiter" ? (
@@ -88,7 +90,7 @@ const Navbar = () => {
             </ul>
           )}
 
-          {/* Authentication Buttons for Logged Out Users */}
+          {/* Logged out state */}
           {!user ? (
             <div className="hidden space-x-2 md:flex">
               <Link to="/login">
@@ -104,11 +106,11 @@ const Navbar = () => {
               </Link>
             </div>
           ) : (
-            // Large Screen Popover for User Options
+            // Large screen popover
             <div className="hidden md:block">
               <Popover>
                 <PopoverTrigger>
-                  <MoreVertical className="text-2xl text-gray-900 cursor-pointer " />
+                  <MoreVertical className="text-2xl text-gray-900 cursor-pointer" />
                 </PopoverTrigger>
                 <PopoverContent className="mt-2 mr-3 bg-white rounded-lg shadow-lg w-72">
                   <div className="p-4">
@@ -130,16 +132,15 @@ const Navbar = () => {
                           >
                             Applications
                           </Link>
-
                           <Link
-                            to="/student/bookmark/"
-                            className="hover:text-[#023b81]"
+                            to="/student/bookmark"
+                            className="hover:text-[#023b81] cursor-pointer"
                           >
-                            Book Marked
+                            Bookmarked
                           </Link>
                           <Link
-                            to="/student/recommendations/"
-                            className="hover:text-[#023b81]"
+                            to="/student/recommendations"
+                            className="hover:text-[#023b81] cursor-pointer"
                           >
                             Recommendations
                           </Link>
@@ -158,8 +159,8 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Small Screen Popover */}
-          <div className="block md:hidden ">
+          {/* Small screen popover */}
+          <div className="block md:hidden">
             <Popover>
               <PopoverTrigger>
                 <MoreVertical className="text-2xl text-gray-900 cursor-pointer" />
@@ -220,6 +221,18 @@ const Navbar = () => {
                               className="hover:text-[#023b81] cursor-pointer"
                             >
                               Applications
+                            </Link>
+                            <Link
+                              to="/student/bookmark"
+                              className="hover:text-[#023b81] cursor-pointer"
+                            >
+                              Bookmarked
+                            </Link>
+                            <Link
+                              to="/student/recommendations"
+                              className="hover:text-[#023b81] cursor-pointer"
+                            >
+                              Recommendations
                             </Link>
                           </>
                         )}
