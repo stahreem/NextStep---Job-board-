@@ -45,7 +45,7 @@ function HeroSection() {
         <div className="flex items-center w-full max-w-xl p-2 mx-auto bg-white border border-gray-300 rounded-full shadow-lg md:px-4">
           <input
             type="text"
-            placeholder="Search for jobs or companies"
+            placeholder="Search for jobs"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full py-2 pl-2 text-lg text-gray-700 placeholder-gray-500 bg-transparent border-none outline-none"

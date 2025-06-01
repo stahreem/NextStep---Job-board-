@@ -50,20 +50,30 @@ def train_svd(df, n_components=5):
     )
     return interaction_matrix, approx_df
 
-def recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5):
+def recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5, threshold=0.3):
     if user_id not in approx_df.index:
         return []
+
     user_scores = approx_df.loc[user_id]
     already_interacted = interaction_matrix.loc[user_id]
-    recommendations = user_scores[already_interacted == 0]
-    top_recommendations = recommendations.sort_values(ascending=False).head(top_n)
+
+    non_interacted = user_scores[already_interacted == 0]
+
+    # If user has interacted with very few jobs, skip threshold filtering
+    if already_interacted.sum() < 3:
+        top_recommendations = non_interacted.sort_values(ascending=False).head(top_n)
+    else:
+        filtered = non_interacted[non_interacted > threshold]
+        top_recommendations = filtered.sort_values(ascending=False).head(top_n)
+
     return top_recommendations.index.tolist()
 
 if __name__ == "__main__":
     user_id = sys.argv[1]
     df = fetch_interaction_data()
-    interaction_matrix, approx_df = train_svd(df)
-    recommendations = recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5)
-    
-    # ✅ Directly print job IDs as JSON
-    print(json.dumps(recommendations))
+    if df.empty:
+        print(json.dumps([]))
+    else:
+        interaction_matrix, approx_df = train_svd(df)
+        recommendations = recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5)
+        print(json.dumps(recommendations))

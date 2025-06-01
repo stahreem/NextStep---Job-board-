@@ -93,7 +93,7 @@ function JobCard({ job }) {
 
   const isBookmarked = bookmarkedJobs.includes(job._id);
 
-  console.log("Bookmarked IDs:", bookmarkedJobs);
+  // console.log("Bookmarked IDs:", bookmarkedJobs);
   // console.log("Current Job ID:", job._id);
 
   return (

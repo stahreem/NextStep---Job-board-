@@ -17,8 +17,16 @@ collection = db["parsed_resumes"]
 
 # Predefined skills list
 SKILLS_DB = [
-    'python', 'java', 'c++', 'react', 'node.js', 'mongodb',
-    'express', 'sql', 'html', 'css', 'javascript', 'flutter', 'aws',
+    'python', 'java','c++', 'c#', 'javascript', 'typescript', 'go', 'ruby', 'kotlin', 'swift', 'php', 'rust', 'scala', 
+    'html', 'css', 'sass', 'less', 'bootstrap', 'tailwind', 'react', 'angular', 'vue', 'next.js', 'nuxt.js', 'node.js', 'express', 
+    'django', 'flask', 'fastapi', 'flutter', 'react native', 'swift', 'kotlin', 'android', 'ios', 'xamarin',
+    'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'terraform', 'ansible', 'jenkins', 'gitlab ci/cd', 'github actions', 'devops',
+    'sql', 'postgresql', 'mongodb', 'oracle', 'redis', 'sqlite', 'cassandra', 'firebase', 'neo4j',
+    'numpy', 'pandas', 'scikit-learn', 'tensorflow', 'keras', 'pytorch', 'matplotlib', 'seaborn', 'openai', 'transformers', 'huggingface', 
+    'cv2', 'opencv', 'statistics', 'deep learning', 'machine learning', 'data analysis', 'data visualization', 'nlp', 'llm',
+    'git', 'github', 'jira', 'uml', 'rest api', 'graphql', 'socket.io', 'websockets', 'oauth', 'jwt', 'ci/cd', 'agile', 'scrum', 'tdd', 
+    'bdd', 'linux', 'bash', 'vscode', 'intellij', 'eclipse','mvc', 'mvvm', 'microservices', 'monolith', 'unit testing', 
+    'integration testing', 'jest', 'mocha', 'chai', 'selenium', 'cypress', 'postman','communication', 'teamwork', 'problem solving', 'leadership', 'adaptability', 'critical thinking', 'creativity', 'time management'
 ]
 
 def extract_text_from_pdf(url):
