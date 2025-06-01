@@ -5,7 +5,7 @@ import { store } from "@/redux/store";
 import { APPLICATION_API_END_POINT } from "@/utils/Constant";
 import axios from "axios";
 import { ArrowLeft } from "lucide-react";
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -14,6 +14,9 @@ function Applicants() {
   const dispatch = useDispatch();
   const { applicants } = useSelector((store) => store.application);
   const navigate = useNavigate();
+
+  const [jobTitle, setJobTitle] = useState("");
+  const [company, setCompany] = useState(null);
 
   useEffect(() => {
     const fetchAllApplicants = async () => {
@@ -26,7 +29,9 @@ function Applicants() {
 
         if (res.data.success) {
           dispatch(setApplication(res.data.applications));
-          console.log(applicants.length);
+          setJobTitle(res.data.jobTitle);
+          setCompany(res.data.company);
+          // console.log(applicants.length);
         }
       } catch (error) {
         console.log(error);
@@ -48,10 +53,18 @@ function Applicants() {
 
           {/* Centered Title */}
           <h1 className="flex-grow text-2xl font-bold text-center text-[#0e4d62]">
-            Applications ({applicants?.length || 0})
+            <span className="text-[#0e4d62]">{jobTitle}</span>{" "}
+            <span className="font-semibold text-teal-600">
+              @ {company?.name}
+            </span>{" "}
+            —
+            <span className="font-medium text-gray-700">
+              {" "}
+              Applications ({applicants?.length || 0})
+            </span>
           </h1>
         </div>
-          <ApplicationTable />
+        <ApplicationTable />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import path from "path";
 import { exec } from "child_process";
 import { fileURLToPath } from "url";
 // import { getDataUri } from "../utils/dataUri.js"; // adjust if needed
+import { spawn } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -170,17 +171,16 @@ export const updateProfile = async (req, res) => {
     } = req.body;
 
     const file = req.file;
-    const userId = req.id;
+    const userId = req.id; // ensure your auth middleware sets req.id correctly
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        success: false,
-      });
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
     }
 
-    // Update basic fields
+    // Update basic fields if provided
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
@@ -191,86 +191,61 @@ export const updateProfile = async (req, res) => {
     if (file) {
       originalResumeName = file.originalname;
       const fileUri = getDataUri(file);
-      const isPDF = file.mimetype === "application/pdf";
 
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-        resource_type: isPDF ? "raw" : "auto",
-        folder: "resumes",
-        public_id: originalResumeName.split(".")[0],
-      });
+      const cloudResponse = await cloudinary.uploader
+        .upload(fileUri.content, {
+          resource_type: "raw",
+          type: "authenticated",
+          sign_url: true,
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      console.log(cloudResponse);
 
       resumeLink = cloudResponse.secure_url;
 
-      // Parse the resume
-      exec(
-        `python "${scriptPath}" "${resumeLink}"`,
-        async (err, stdout, stderr) => {
-          if (err || stderr) {
-            console.error("Python script error:", err || stderr);
-            return res
-              .status(500)
-              .json({ message: "Error parsing resume", success: false });
-          }
+      // Trigger resume parsing in the background
+      const pythonProcess = spawn("python", [scriptPath, resumeLink, userId]);
 
-          let parsedData = {};
-          try {
-            parsedData = JSON.parse(stdout);
-          } catch (jsonErr) {
-            console.error("Failed to parse Python output:", jsonErr);
-            return res
-              .status(500)
-              .json({ message: "Failed to parse resume data", success: false });
-          }
+      pythonProcess.stdout.on("data", (data) => {
+        console.log("Parsed output:", data.toString());
+      });
 
-          user.studentDetails = {
-            ...user.studentDetails,
-            ...(graduationStatus && { graduationStatus }),
-            ...(github && { github }),
-            ...(linkedin && { linkedin }),
-            ...(about && { about }),
-            ...(education && { education }),
-            ...(experience && { experience }),
-            ...(skills && { skills }),
-            ...(projects && { projects }),
-            ...(interests && { interests }),
-            resumeLink,
-            resumeName: originalResumeName,
-            parsedData,
-          };
+      pythonProcess.stderr.on("data", (err) => {
+        console.error("Parsing error:", err.toString());
+      });
 
-          await user.save();
-
-          return res.status(200).json({
-            message: "User profile updated successfully with resume parsing",
-            user,
-            parsedData,
-            success: true,
-          });
-        }
-      );
-    } else {
-      // No resume upload — update profile directly
-      user.studentDetails = {
-        ...user.studentDetails,
-        ...(graduationStatus && { graduationStatus }),
-        ...(github && { github }),
-        ...(linkedin && { linkedin }),
-        ...(about && { about }),
-        ...(education && { education }),
-        ...(experience && { experience }),
-        ...(skills && { skills }),
-        ...(projects && { projects }),
-        ...(interests && { interests }),
-      };
-
-      await user.save();
-
-      return res.status(200).json({
-        message: "User profile updated successfully",
-        user,
-        success: true,
+      pythonProcess.on("close", (code) => {
+        console.log(`Parser exited with code ${code}`);
       });
     }
+
+    // Update studentDetails (with or without resume info)
+    user.studentDetails = {
+      ...user.studentDetails,
+      ...(graduationStatus && { graduationStatus }),
+      ...(github && { github }),
+      ...(linkedin && { linkedin }),
+      ...(about && { about }),
+      ...(education && { education }),
+      ...(experience && { experience }),
+      ...(skills && { skills }),
+      ...(projects && { projects }),
+      ...(interests && { interests }),
+      ...(resumeLink && { resumeLink }),
+      ...(originalResumeName && { resumeName: originalResumeName }),
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      message: file
+        ? "Resume uploaded, parsing started in background"
+        : "User profile updated successfully",
+      user,
+      success: true,
+    });
   } catch (error) {
     console.error("Error in updateProfile controller:", error);
     return res.status(500).json({

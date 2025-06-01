@@ -102,7 +102,7 @@ def main():
         #print(f"Logistic Regression: {ml_scores['logistic_regression']:.2f}%")
         #print(f"Naive Bayes:         {ml_scores['naive_bayes']:.2f}%")
         #print(f"Hybrid Skill Match:  {hybrid_score:.2f}%")
-        print(json.dumps({"fit_score": round(final_score, 2)}))
+        # print(json.dumps({"fit_score": round(final_score, 2)}))
 
     except ValueError as e:
         print(f"Error: {e}")

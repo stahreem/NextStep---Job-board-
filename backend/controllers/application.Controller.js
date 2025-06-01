@@ -90,10 +90,12 @@ export const getAppliedJobs = async (req, res) => {
 export const getApplications = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const job = await Job.findById(jobId).populate({
-      path: "application",
-      populate: { path: "applicant" },
-    });
+    const job = await Job.findById(jobId)
+      .populate({
+        path: "application",
+        populate: { path: "applicant" },
+      })
+      .populate("company");
 
     if (!job) {
       return res.status(404).json({
@@ -102,9 +104,12 @@ export const getApplications = async (req, res) => {
       });
     }
 
-    return res
-      .status(200)
-      .json({ applications: job.application, success: true });
+    return res.status(200).json({
+      applications: job.application,
+      jobTitle: job.title,
+      company: job.company, // Send back company data too
+      success: true,
+    });
   } catch (error) {
     console.error("Error in getApplications controller:", error);
     return res

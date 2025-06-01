@@ -10,7 +10,7 @@ import {
 // import useGetCompanyById from "@/hooks/useGetCompanyById";
 import { setCompanies } from "@/redux/companySlice";
 import { store } from "@/redux/store";
-import { COMPANY_API_END_POINT, JOB_API_END_POINT } from "@/utils/Constant";
+import { JOB_API_END_POINT } from "@/utils/Constant";
 import axios from "axios";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -77,6 +77,7 @@ function JobsTable() {
               <TableHead>Date</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>No of Applicants</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -109,7 +110,7 @@ function JobsTable() {
                   >
                     {job?.title}
                   </TableCell>
-
+                  <TableCell>{job?.application.length}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-start gap-9">
                       <Eye

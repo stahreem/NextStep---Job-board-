@@ -70,7 +70,12 @@ export const postJob = async (req, res) => {
         }
 
         try {
-          const parsedData = JSON.parse(stdout);
+          const jsonMatch = stdout.match(/{[\s\S]*}/); // extract the first JSON block
+          if (!jsonMatch)
+            throw new Error("No valid JSON found in script output.");
+
+          const parsedData = JSON.parse(jsonMatch[0]);
+
           await ParsedJob.create({
             jobId: jobCreate._id,
             parsed_tags: parsedData.tags,
