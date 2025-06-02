@@ -1,8 +1,6 @@
 import { Bookmark } from "../models/bookMark.model.js";
 
 export const addBookMark = async (req, res) => {
-  // console.log("req.user:", req.id);
-  // console.log("req.jobID:", req.params.id);
   const userId = req.id;
   const jobId = req.params.id;
 
@@ -54,16 +52,14 @@ export const removeBookmark = async (req, res) => {
 
 export const getBookmarkedJobs = async (req, res) => {
   try {
-    const userID = req.id; // req.user.id must be set by your auth middleware
-
+    const userID = req.id;
     const bookmarks = await Bookmark.find({ user: userID })
       .populate({
         path: "job",
-        populate: { path: "company" }, // optional: if you want company data inside job
+        populate: { path: "company" },
       })
       .sort({ createdAt: -1 });
 
-    // Extract only the job objects from the bookmarks
     const jobs = bookmarks.map((b) => b.job);
 
     if (!jobs || jobs.length === 0) {
@@ -89,8 +85,6 @@ export const getUserBookmarkedJobIds = async (req, res) => {
       path: "job",
       populate: { path: "company" },
     });
-
-    // const jobIds = bookmarks.map((b) => b.job._id.toString());
 
     return res.status(200).json({ success: true, bookmarks });
   } catch (err) {

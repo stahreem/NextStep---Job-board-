@@ -1,7 +1,6 @@
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-// import Navbar from './components/elements/Navbar'
 import Dashboard from "./pages/student/Dashboard";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";

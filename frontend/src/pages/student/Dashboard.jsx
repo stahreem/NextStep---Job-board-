@@ -3,28 +3,33 @@ import CategoryCarouselSection from "@/components/elements/CategoryCarouselSecti
 import Navbar from "@/components/elements/Navbar";
 import LatestJobs from "@/components/elements/LatestJobs";
 import Footer from "@/components/elements/Footer";
-// import useGetAllJobs from "@/hooks/useGetAllJobs";
 import { useSelector } from "react-redux";
 import { store } from "@/redux/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useGetBookmarks from "@/hooks/useGetBookmarks";
-// import React from 'react'
 
 function Dashboard() {
-  const { user } = useSelector((store) => store.auth);
+  const { user, loading } = useSelector((store) => store.auth);
+  const isAuthenticated = !!user;
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      if (user.role === "recruiter") {
+    if (!loading) {
+      if (!isAuthenticated) {
+        navigate("/login");
+      } else if (user?.role === "recruiter") {
         navigate("/admin/company");
       }
     }
-  }, [user]);
+  }, [user, isAuthenticated, loading, navigate]);
 
-  // useGetAllJobs();
-  useGetBookmarks();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
+  }
   return (
     <div>
       <Navbar />

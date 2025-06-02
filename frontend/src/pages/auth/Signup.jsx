@@ -142,7 +142,7 @@ function Signup() {
                 <SelectValue placeholder="Select Role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="student">Job Seeker</SelectItem>
                 <SelectItem value="recruiter">Recruiter</SelectItem>
               </SelectContent>
             </Select>

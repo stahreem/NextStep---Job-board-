@@ -80,11 +80,6 @@ const Navbar = () => {
                       Jobs
                     </Link>
                   </li>
-                  <li>
-                    <Link to="/browse" className="hover:text-[#023b81]">
-                      Browse
-                    </Link>
-                  </li>
                 </>
               )}
             </ul>
@@ -204,12 +199,7 @@ const Navbar = () => {
                             >
                               Jobs
                             </Link>
-                            <Link
-                              to="/browse"
-                              className="hover:text-[#023b81] cursor-pointer"
-                            >
-                              Browse
-                            </Link>
+
                             <Link
                               to="/student/profile"
                               className="hover:text-[#023b81] cursor-pointer"

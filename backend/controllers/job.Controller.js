@@ -3,7 +3,6 @@ import { Bookmark } from "../models/bookMark.model.js";
 import { exec } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-
 import { ParsedJob } from "../models/parsedJobData.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +55,7 @@ export const postJob = async (req, res) => {
       created_by: userID,
     });
 
-    // ✅ Trigger parser and store parsed data
+    //  Trigger parser and store parsed data
     exec(
       `python "${jobScriptPath}" "${jobCreate._id}"`,
       async (error, stdout, stderr) => {
@@ -70,7 +69,7 @@ export const postJob = async (req, res) => {
         }
 
         try {
-          const jsonMatch = stdout.match(/{[\s\S]*}/); // extract the first JSON block
+          const jsonMatch = stdout.match(/{[\s\S]*}/);
           if (!jsonMatch)
             throw new Error("No valid JSON found in script output.");
 
@@ -251,12 +250,12 @@ export const getAllJobs = async (req, res) => {
 
 export const getBookmarkedJobs = async (req, res) => {
   try {
-    const userID = req.user.id; // req.user.id must be set by your auth middleware
+    const userID = req.user.id;
 
     const bookmarks = await Bookmark.find({ user: userID })
       .populate({
         path: "job",
-        populate: { path: "company" }, // optional: if you want company data inside job
+        populate: { path: "company" },
       })
       .sort({ createdAt: -1 });
 
@@ -390,7 +389,7 @@ export const createJob = async (req, res) => {
 
     const job = await Job.create(newJobData);
 
-    // ✅ Trigger the Python job parser
+    // Trigger the Python job parser
     exec(
       `python3 job_parser/job_parser.py ${job._id}`,
       (error, stdout, stderr) => {

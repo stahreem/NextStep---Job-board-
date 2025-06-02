@@ -14,13 +14,13 @@ function useGetBookmarks() {
         const res = await axios.get(`${BOOKMARK_API_END_POINT}/all`, {
           withCredentials: true,
         });
-        console.log("Bookmarks response:", res);
+        // console.log("Bookmarks response:", res);
 
         if (res.data.success) {
           dispatch(setBookmarkedJobs(res.data.jobs));
         }
       } catch (err) {
-        // toast.error("Failed to fetch bookmarks");
+        toast.error("Failed to fetch bookmarks");
         console.log(err);
         dispatch(setBookmarkedJobs([]));
       }

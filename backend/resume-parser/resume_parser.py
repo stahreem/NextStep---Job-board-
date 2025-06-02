@@ -5,6 +5,7 @@ import re
 import json
 from PyPDF2 import PdfReader
 from pymongo import MongoClient
+from spacy.matcher import PhraseMatcher
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -12,21 +13,21 @@ nlp = spacy.load("en_core_web_sm")
 # MongoDB setup
 MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(MONGO_URI)
-db = client["test"]  # use your DB name here
+db = client["test"]
 collection = db["parsed_resumes"]
 
 # Predefined skills list
 SKILLS_DB = [
-    'python', 'java','c++', 'c#', 'javascript', 'typescript', 'go', 'ruby', 'kotlin', 'swift', 'php', 'rust', 'scala', 
-    'html', 'css', 'sass', 'less', 'bootstrap', 'tailwind', 'react', 'angular', 'vue', 'next.js', 'nuxt.js', 'node.js', 'express', 
-    'django', 'flask', 'fastapi', 'flutter', 'react native', 'swift', 'kotlin', 'android', 'ios', 'xamarin',
+    'python', 'java', 'c++', 'c#', 'javascript', 'typescript', 'go', 'ruby', 'kotlin', 'swift', 'php', 'rust', 'scala',
+    'html', 'css', 'sass', 'less', 'bootstrap', 'tailwind', 'react', 'angular', 'vue', 'next.js', 'nuxt.js', 'node.js', 'express',
+    'django', 'flask', 'fastapi', 'flutter', 'react native', 'kotlin', 'android', 'ios', 'xamarin',
     'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'terraform', 'ansible', 'jenkins', 'gitlab ci/cd', 'github actions', 'devops',
     'sql', 'postgresql', 'mongodb', 'oracle', 'redis', 'sqlite', 'cassandra', 'firebase', 'neo4j',
     'numpy', 'pandas', 'scikit-learn', 'tensorflow', 'keras', 'pytorch', 'matplotlib', 'seaborn', 'openai', 'transformers', 'huggingface', 
     'cv2', 'opencv', 'statistics', 'deep learning', 'machine learning', 'data analysis', 'data visualization', 'nlp', 'llm',
-    'git', 'github', 'jira', 'uml', 'rest api', 'graphql', 'socket.io', 'websockets', 'oauth', 'jwt', 'ci/cd', 'agile', 'scrum', 'tdd', 
-    'bdd', 'linux', 'bash', 'vscode', 'intellij', 'eclipse','mvc', 'mvvm', 'microservices', 'monolith', 'unit testing', 
-    'integration testing', 'jest', 'mocha', 'chai', 'selenium', 'cypress', 'postman','communication', 'teamwork', 'problem solving', 'leadership', 'adaptability', 'critical thinking', 'creativity', 'time management'
+    'git', 'github', 'jira', 'uml', 'rest api', 'graphql', 'socket.io', 'websockets', 'oauth', 'jwt', 'ci/cd', 'agile', 'scrum', 'tdd',
+    'bdd', 'linux', 'bash', 'vscode', 'intellij', 'eclipse', 'mvc', 'mvvm', 'microservices', 'monolith', 'unit testing','excel','powerbi','iam','splunk'
+    'integration testing', 'jest', 'mocha', 'chai', 'selenium', 'cypress', 'postman', 'communication', 'teamwork', 'problem solving', 'leadership', 'adaptability', 'critical thinking', 'creativity', 'time management'
 ]
 
 def extract_text_from_pdf(url):
@@ -36,7 +37,9 @@ def extract_text_from_pdf(url):
     reader = PdfReader("temp_resume.pdf")
     text = ""
     for page in reader.pages:
-        text += page.extract_text() + "\n"
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text + "\n"
     return text
 
 def extract_email(text):
@@ -44,22 +47,34 @@ def extract_email(text):
     return match.group(0) if match else None
 
 def extract_phone(text):
+    # This regex attempts to capture common phone number formats.
     match = re.search(r"(\+?\d{1,3}[\s-]?)?(\d{10})", text)
     return match.group(0) if match else None
 
 def extract_name(doc):
+    # Return the first PERSON entity found.
     for ent in doc.ents:
         if ent.label_ == "PERSON":
             return ent.text
     return None
 
 def extract_skills(text):
-    found_skills = []
-    text_lower = text.lower()
-    for skill in SKILLS_DB:
-        if skill.lower() in text_lower:
-            found_skills.append(skill)
-    return list(set(found_skills))
+    """
+    Extract skills using spaCy’s PhraseMatcher for context-aware matching.
+    This version creates phrase patterns for each skill in SKILLS_DB.
+    """
+    doc = nlp(text.lower())
+    matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+    # Create patterns for skills
+    patterns = [nlp.make_doc(skill.lower()) for skill in SKILLS_DB]
+    matcher.add("SKILLS", patterns)
+
+    matches = matcher(doc)
+    found_skills = set()
+    for match_id, start, end in matches:
+        span = doc[start:end]
+        found_skills.add(span.text.lower())
+    return list(found_skills)
 
 def extract_education(text):
     education_keywords = ['bachelor', 'b.tech', 'master', 'university', 'college', 'school']
@@ -94,7 +109,7 @@ def main():
         "experience": extract_experience(text),
     }
 
-    # Upsert: update if user resume exists, else insert new
+    # Upsert: update if user resume exists, else insert new document.
     collection.update_one(
         {"user": user_id},
         {"$set": data},

@@ -7,7 +7,6 @@ import { EventEmitter } from "events";
 dotenv.config({});
 const app = express();
 
-// Increase max listeners if necessary
 EventEmitter.defaultMaxListeners = 20;
 
 // middleware
@@ -38,7 +37,7 @@ import bookMarkRoutes from "./routes/bookMark.Routes.js";
 app.use("/api/v1/bookmark", bookMarkRoutes);
 
 import recommendationsRoutes from "./routes/recommendations.Routes.js";
-app.use("/api/v1", recommendationsRoutes); // Fix: Added leading slash
+app.use("/api/v1", recommendationsRoutes);
 
 import resumeRoutes from "./routes/resume.Routes.js";
 app.use("/api/v1/resume", resumeRoutes);

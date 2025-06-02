@@ -56,12 +56,12 @@ def hybrid_skill_match_score(resume_skills, job_skills):
     ratio = matched / total
     base_score = ratio * 100
 
-    # Custom boosting rules based on total job skills and matches
+
     if total <= 3:
         if matched == 3:
-            return 85.0  # all match out of 3 → strong boost
+            return 85.0  
         elif matched == 2:
-            return 72.0  # 2 out of 3 → medium boost
+            return 72.0 
         elif matched == 1:
             return max(base_score, 33.0)
         else:
@@ -98,14 +98,11 @@ def main():
         hybrid_score = hybrid_skill_match_score(resume_skills, job_skills)
         final_score = max(ml_scores["logistic_regression"], ml_scores["naive_bayes"], hybrid_score)
 
-        #print(f"\nUser: {args.user_id} | Job: {args.job_id}")
-        #print(f"Logistic Regression: {ml_scores['logistic_regression']:.2f}%")
-        #print(f"Naive Bayes:         {ml_scores['naive_bayes']:.2f}%")
-        #print(f"Hybrid Skill Match:  {hybrid_score:.2f}%")
-        # print(json.dumps({"fit_score": round(final_score, 2)}))
+        
+        print(json.dumps({"fit_score": round(final_score, 2)}))
 
     except ValueError as e:
-        print(f"Error: {e}")
+        print(json.dumps({"error": str(e)}))
 
 if __name__ == "__main__":
     main()

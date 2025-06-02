@@ -2,10 +2,9 @@ import { log } from "console";
 import { Company } from "../models/company.model.js";
 import cloudinary from "../utils/cloudinary.js";
 import getDataUri from "../utils/dataUri.js";
+import { User } from "../models/user.model.js";
 
 // Register a new company
-import { User } from "../models/user.model.js"; // Make sure this path is correct
-
 export const registerCompany = async (req, res) => {
   try {
     const { companyName } = req.body;
@@ -17,7 +16,7 @@ export const registerCompany = async (req, res) => {
       });
     }
 
-    // Optional: Fetch user from DB if you need role validation
+    //  Fetch user from DB if you need role validation
     const user = await User.findById(req.id);
     if (!user || user.role !== "recruiter") {
       return res.status(403).json({
@@ -39,7 +38,7 @@ export const registerCompany = async (req, res) => {
     // Register the new company with userID
     const company = await Company.create({
       name: companyName,
-      userID: req.id, // ✅ This is the field your schema requires
+      userID: req.id,
     });
 
     return res.status(201).json({
@@ -59,8 +58,8 @@ export const registerCompany = async (req, res) => {
 
 export const getCompanies = async (req, res) => {
   try {
-    const userID = req.id; // Ensure req.id is the correct user ID
-    const companies = await Company.find({ userID: userID }); // Use the correct field name "userID"
+    const userID = req.id;
+    const companies = await Company.find({ userID: userID });
 
     if (!companies || companies.length === 0) {
       return res.status(404).json({
@@ -113,7 +112,6 @@ export const updateCompany = async (req, res) => {
     const { name, description, website, location } = req.body;
 
     const file = req.file;
-    // console.log("Uploaded file:", file);
 
     let companyLogo;
     if (file) {
@@ -130,8 +128,8 @@ export const updateCompany = async (req, res) => {
 
     // Update the company details
     const company = await Company.findByIdAndUpdate(req.params.id, updateData, {
-      new: true, // Return the updated document
-      runValidators: true, // Ensure validation is applied to updated fields
+      new: true,
+      runValidators: true,
     });
 
     if (!company) {

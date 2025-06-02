@@ -6,7 +6,6 @@ import cloudinary from "../utils/cloudinary.js";
 import path from "path";
 import { exec } from "child_process";
 import { fileURLToPath } from "url";
-// import { getDataUri } from "../utils/dataUri.js"; // adjust if needed
 import { spawn } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -171,7 +170,7 @@ export const updateProfile = async (req, res) => {
     } = req.body;
 
     const file = req.file;
-    const userId = req.id; // ensure your auth middleware sets req.id correctly
+    const userId = req.id;
     const user = await User.findById(userId);
 
     if (!user) {

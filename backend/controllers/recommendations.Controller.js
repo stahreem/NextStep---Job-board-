@@ -1,16 +1,14 @@
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Job } from "../models/job.model.js"; // Adjust path if necessary
+import { Job } from "../models/job.model.js";
 
-// Get current module path (for ES6)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ===================== 🔁 SVD-BASED RECOMMENDATIONS =====================
 export const getRecommendations = async (req, res) => {
   const userId = req.id;
-  console.log("✅ Authenticated User ID:", userId);
 
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized: User ID not found" });
@@ -136,7 +134,7 @@ export const recommendJobs = async (req, res) => {
 
 // ===================== 🔁 FIT SCORE FROM PYTHON SCRIPT =====================
 export const getFitScore = async (req, res) => {
-  const { userId, jobId } = req.params; // ✅ Now pulled from URL params
+  const { userId, jobId } = req.params;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required" });
@@ -146,7 +144,7 @@ export const getFitScore = async (req, res) => {
     return res.status(400).json({ error: "Job ID is required" });
   }
 
-  const pythonPath = "python"; // or "python3"
+  const pythonPath = "python";
   const scriptPath = path.join(__dirname, "../ml_algorithms/fit_score.py");
 
   const pythonProcess = spawn(pythonPath, [scriptPath, userId, jobId]);
@@ -170,7 +168,7 @@ export const getFitScore = async (req, res) => {
     }
 
     try {
-      const recommendedScore = JSON.parse(result); // Make sure Python returns valid JSON
+      const recommendedScore = JSON.parse(result);
       console.log("✅ Fit Score:", recommendedScore.fit_score);
 
       return res.status(200).json({

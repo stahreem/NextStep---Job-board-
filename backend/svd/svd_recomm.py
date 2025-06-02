@@ -32,6 +32,10 @@ def fetch_interaction_data():
 
     return pd.DataFrame(data, columns=["UserID", "JobID", "InteractionValue"])
 
+def fetch_job_titles():
+    jobs = db["jobs"].find({}, {"_id": 1, "title": 1})
+    return {str(job["_id"]): job.get("title", "Untitled Job") for job in jobs}
+
 def train_svd(df, n_components=5):
     interaction_matrix = df.pivot_table(
         index='UserID',
@@ -50,30 +54,28 @@ def train_svd(df, n_components=5):
     )
     return interaction_matrix, approx_df
 
-def recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5, threshold=0.3):
+def recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5):
     if user_id not in approx_df.index:
         return []
-
     user_scores = approx_df.loc[user_id]
     already_interacted = interaction_matrix.loc[user_id]
-
-    non_interacted = user_scores[already_interacted == 0]
-
-    # If user has interacted with very few jobs, skip threshold filtering
-    if already_interacted.sum() < 3:
-        top_recommendations = non_interacted.sort_values(ascending=False).head(top_n)
-    else:
-        filtered = non_interacted[non_interacted > threshold]
-        top_recommendations = filtered.sort_values(ascending=False).head(top_n)
-
+    recommendations = user_scores[already_interacted == 0]
+    top_recommendations = recommendations.sort_values(ascending=False).head(top_n)
     return top_recommendations.index.tolist()
 
 if __name__ == "__main__":
-    user_id = sys.argv[1]
-    df = fetch_interaction_data()
-    if df.empty:
-        print(json.dumps([]))
-    else:
+    try:
+        user_id = sys.argv[1]
+        df = fetch_interaction_data()
+        if df.empty:
+            print(json.dumps([]))
+            sys.exit()
+
         interaction_matrix, approx_df = train_svd(df)
         recommendations = recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5)
-        print(json.dumps(recommendations))
+        job_titles_map = fetch_job_titles()
+        # recommendation_titles = [job_titles_map.get(job_id, f"Unknown Job ID: {job_id}") for job_id in recommendations]
+
+        print(json.dumps(recommendations))  # OUTPUT
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))

@@ -38,7 +38,7 @@ export const parseResume = async (req, res) => {
       try {
         // Connect to MongoDB and fetch parsed resume
         await client.connect();
-        const db = client.db("test"); // Replace with your DB name
+        const db = client.db("test");
         const collection = db.collection("parsed_resumes");
 
         const parsedResume = await collection.findOne({ user: userId });

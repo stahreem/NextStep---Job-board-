@@ -107,7 +107,7 @@ export const getApplications = async (req, res) => {
     return res.status(200).json({
       applications: job.application,
       jobTitle: job.title,
-      company: job.company, // Send back company data too
+      company: job.company,
       success: true,
     });
   } catch (error) {
