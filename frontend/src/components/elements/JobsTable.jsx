@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-// import useGetCompanyById from "@/hooks/useGetCompanyById";
 import { setCompanies } from "@/redux/companySlice";
 import { store } from "@/redux/store";
 import { JOB_API_END_POINT } from "@/utils/Constant";
@@ -38,8 +37,6 @@ function JobsTable() {
       });
     setFilterJob(filteredJob);
   }, [allAdminJobs, searchJob]);
-
-  // useGetCompanyById();
 
   // Handle delete action for a specific company
   const handleDelete = async (id) => {

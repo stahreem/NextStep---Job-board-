@@ -22,8 +22,8 @@ import { useParams } from "react-router-dom";
 function ApplicationTable() {
   const dispatch = useDispatch();
   const { applicants } = useSelector((store) => store.application);
-  const { id: jobId } = useParams(); // Job ID from URL
-  const [fitScores, setFitScores] = useState({}); // { userId: score }
+  const { id: jobId } = useParams();
+  const [fitScores, setFitScores] = useState({});
 
   const statusHandler = async (status, id) => {
     try {
@@ -62,12 +62,7 @@ function ApplicationTable() {
           const res = await axios.get(
             `${FIT_SCORE_API_END_POINT}/${jobId}/${userId}`
           );
-          // if (res.data.success) {
-          //   const score = res.data.recommendedScore.fit_score;
-          //   scores[userId] = score;
-          // } else {
-          //   scores[userId] = null;
-          // }
+
           if (
             res.data.success &&
             res.data.recommendedScore?.fit_score !== undefined
@@ -84,7 +79,7 @@ function ApplicationTable() {
       }
 
       console.log("Final fit scores map:", scores);
-      setFitScores(scores); // Set state once
+      setFitScores(scores);
     };
 
     if (applicants.length) fetchFitScores();

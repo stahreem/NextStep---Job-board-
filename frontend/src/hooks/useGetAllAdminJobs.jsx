@@ -17,9 +17,11 @@ function useGetAllAdminJobs() {
         console.log(res.data.jobs);
         if (res.data.success) {
           dispatch(setAllAdminJobs(res.data.jobs));
-          //   toast.success(res.data.message || "All jobs get Successfully!");
-          // } else {
-          //   toast.error(res.data.message || "Failed to get All jobs. Please try again.");
+          toast.success(res.data.message || "All jobs get Successfully!");
+        } else {
+          toast.error(
+            res.data.message || "Failed to get All jobs. Please try again."
+          );
         }
         console.log("from useGetAllAdminJobs", res);
       } catch (error) {

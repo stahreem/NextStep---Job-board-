@@ -23,18 +23,15 @@ function Recommendation() {
         }),
       ]);
 
-      // ✅ Behavioral response fix
+      //  Behavioral response fix
       if (Array.isArray(behavioralRes.data.recommendations)) {
-        console.log(
-          "Behavioral Recommendations:",
-          behavioralRes.data.recommendations
-        );
+        // console.log("Behavioral Recommendations:",behavioralRes.data.recommendations);
         setBehavioralRecs(behavioralRes.data.recommendations);
       }
 
-      // ✅ Content-based response
+      //  Content-based response
       if (contentRes.data.success && Array.isArray(contentRes.data.data)) {
-        console.log("Content-based Recommendations:", contentRes.data.data);
+        // console.log("Content-based Recommendations:", contentRes.data.data);
         setContentRecs(contentRes.data.data);
       }
     } catch (error) {

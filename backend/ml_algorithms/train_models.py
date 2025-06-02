@@ -1,15 +1,19 @@
+import os
+from dotenv import load_dotenv
 import pymongo
 import pickle
-import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
+# Load .env variables
+load_dotenv()
+
 # MongoDB connection setup
-MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-DB_NAME = "test"
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME")
 
 # Ensure model directory exists
 os.makedirs("models", exist_ok=True)

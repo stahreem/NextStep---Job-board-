@@ -50,7 +50,6 @@ function CompaniesTable() {
       if (res.data.success) {
         toast.success(res.data.message || "Company deleted successfully!");
 
-        // Update Redux state: Remove the deleted company from the state
         const updatedCompanies = companies.filter(
           (company) => company._id !== id
         );
@@ -91,7 +90,7 @@ function CompaniesTable() {
             ) : (
               filterCompany.map((company) => (
                 <TableRow key={company._id} className="font-semibold">
-                    <TableCell>{company.createdAt?.split("T")[0]}</TableCell>
+                  <TableCell>{company.createdAt?.split("T")[0]}</TableCell>
                   <TableCell>
                     <Avatar>
                       <AvatarImage
@@ -105,7 +104,7 @@ function CompaniesTable() {
                     {" "}
                     <Link to="/admin/company/details"> {company.name} </Link>
                   </TableCell>
-                
+
                   <TableCell>
                     <div className="flex justify-start gap-10">
                       <Edit
@@ -116,7 +115,7 @@ function CompaniesTable() {
                       />
                       <Trash2
                         className="w-5 h-5 text-red-500 cursor-pointer"
-                        onClick={() => handleDelete(company?._id)} // Pass company ID here
+                        onClick={() => handleDelete(company?._id)}
                       />
                     </div>
                   </TableCell>

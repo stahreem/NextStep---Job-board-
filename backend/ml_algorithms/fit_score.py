@@ -4,12 +4,14 @@ import pymongo
 import os
 from bson import ObjectId
 import json
+from dotenv import load_dotenv
 
-MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# Load environment variables from .env file
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
 db = client["test"]
-
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
@@ -20,6 +22,7 @@ with open(os.path.join(MODELS_DIR, "logistic_regression.pkl"), "rb") as f:
     lr_model = pickle.load(f)
 with open(os.path.join(MODELS_DIR, "naive_bayes.pkl"), "rb") as f:
     nb_model = pickle.load(f)
+
 def fetch_skills(user_id, job_id):
     resume_doc = db["parsed_resumes"].find_one({"user": user_id})
     job_doc = db["parsedjobs"].find_one({"jobId": ObjectId(job_id)})
@@ -55,7 +58,6 @@ def hybrid_skill_match_score(resume_skills, job_skills):
 
     ratio = matched / total
     base_score = ratio * 100
-
 
     if total <= 3:
         if matched == 3:
@@ -98,7 +100,6 @@ def main():
         hybrid_score = hybrid_skill_match_score(resume_skills, job_skills)
         final_score = max(ml_scores["logistic_regression"], ml_scores["naive_bayes"], hybrid_score)
 
-        
         print(json.dumps({"fit_score": round(final_score, 2)}))
 
     except ValueError as e:

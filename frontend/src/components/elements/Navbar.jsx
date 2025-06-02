@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { setUser } from "@/redux/authSlice";
 import { USER_API_END_POINT } from "@/utils/Constant";
+import { clearAllAppliedJob } from "@/redux/jobSlice";
 
 const Navbar = () => {
   const { user } = useSelector((store) => store.auth);
@@ -28,7 +29,8 @@ const Navbar = () => {
 
       if (res.data.success) {
         dispatch(setUser(null));
-        navigate("/dashboard");
+        dispatch(clearAllAppliedJob());
+        navigate("/login");
         toast.success(res.data.message || "Logout successfully!");
       } else {
         toast.error(res.data.message || "Failed to Logout.");

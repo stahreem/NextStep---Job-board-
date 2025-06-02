@@ -19,7 +19,7 @@ const useGetAllCompanies = () => {
       } catch (error) {
         if (error.response?.status === 404) {
           console.warn("No companies found.");
-          dispatch(setCompanies([])); // optionally dispatch an empty list
+          dispatch(setCompanies([]));
         } else {
           console.error("Error fetching companies:", error);
         }

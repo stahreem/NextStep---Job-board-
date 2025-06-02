@@ -1,17 +1,21 @@
 import sys
+import json
+import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import json
 
-MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# Load environment variables from .env file
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["test"]
 resumes_col = db["parsed_resumes"]
 jobs_col = db["parsedjobs"]
 
 def stringify_skills(skill_list):
-    """Convert list of skills to a single string for TF-IDF."""
     return " ".join(skill_list).lower() if skill_list else ""
 
 def main():
@@ -21,7 +25,6 @@ def main():
 
     user_id = sys.argv[1]
 
-    # Get the resume
     resume_doc = resumes_col.find_one({"user": user_id})
     if not resume_doc:
         print(json.dumps({"success": False, "error": "Resume not found"}))
@@ -32,11 +35,9 @@ def main():
         print(json.dumps({"success": False, "error": "Resume has no skills"}))
         sys.exit(1)
 
-    # Get the jobs
     jobs = list(jobs_col.find())
     job_skills_list = [stringify_skills(job.get("parsed_skills", [])) for job in jobs]
 
-    # Filter out jobs with no skills
     filtered_jobs = [(job, skills) for job, skills in zip(jobs, job_skills_list) if skills.strip()]
     if not filtered_jobs:
         print(json.dumps({"success": False, "error": "No valid job skills found"}))
@@ -45,7 +46,6 @@ def main():
     jobs, job_skills_list = zip(*filtered_jobs)
     documents = [resume_skills] + list(job_skills_list)
 
-    # TF-IDF & Similarity
     tfidf = TfidfVectorizer()
     tfidf_matrix = tfidf.fit_transform(documents)
 

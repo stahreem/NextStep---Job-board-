@@ -28,23 +28,15 @@ const jobSlice = createSlice({
     setAllAppliedJob: (state, action) => {
       state.allAppliedJob = action.payload;
     },
+    clearAllAppliedJob: (state) => {
+      state.allAppliedJob = [];
+    },
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
     },
     setBookmarkedJobs: (state, action) => {
       state.bookmarkedJobs = action.payload || [];
     },
-
-    //   toggleBookmark: (state, action) => {
-    //     const jobId = action.payload;
-    //     if (state.bookmarkedJobIds.includes(jobId)) {
-    //       state.bookmarkedJobIds = state.bookmarkedJobIds.filter(
-    //         (id) => id !== jobId
-    //       );
-    //     } else {
-    //       state.bookmarkedJobIds.push(jobId);
-    //     }
-    //   },
   },
 });
 
@@ -55,8 +47,8 @@ export const {
   setSearchJob,
   setAllAppliedJob,
   setSearchQuery,
+  clearAllAppliedJob,
   setBookmarkedJobs,
-  // toggleBookmark,
 } = jobSlice.actions;
 
 export default jobSlice.reducer;

@@ -14,7 +14,6 @@ import EditStudentProfile from "./pages/student/EditStudentProfile";
 import AdminCompany from "./pages/admin/AdminCompany";
 import CreateCompany from "./pages/admin/CreateCompany";
 import UpdateCompany from "./pages/admin/UpdateCompany";
-import CompanyDetails from "./pages/admin/CompanyDetails";
 import AdminJobs from "./pages/admin/AdminJobs";
 import CreateJob from "./pages/admin/CreateJob";
 import JobDetails from "./pages/admin/JobDetails";
@@ -73,6 +72,7 @@ const appRouter = createBrowserRouter([
     path: "/student/recommendations/",
     element: <Recommendation />,
   },
+
   // admin
   {
     path: "/admin/company",
@@ -106,14 +106,7 @@ const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  {
-    path: "/admin/company/details",
-    element: (
-      <ProtectedRoute>
-        <CompanyDetails />
-      </ProtectedRoute>
-    ),
-  },
+
   {
     path: "/admin/job/post",
     element: (

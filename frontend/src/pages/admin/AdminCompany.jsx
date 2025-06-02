@@ -1,7 +1,6 @@
 import CompaniesTable from "@/components/elements/CompaniesTable";
 import Navbar from "@/components/elements/Navbar";
 import { Button } from "@/components/ui/button";
-// import { Input } from '@/components/ui/input';
 import useGetAllCompanies from "@/hooks/useGetAllCompanies";
 import { setSearchCompany } from "@/redux/companySlice";
 import { useEffect, useState } from "react";

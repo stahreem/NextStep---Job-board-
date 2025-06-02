@@ -3,6 +3,7 @@ import { APPLICATION_API_END_POINT } from "@/utils/Constant";
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 const useGetAppliedJob = () => {
   const dispatch = useDispatch();
@@ -18,7 +19,8 @@ const useGetAppliedJob = () => {
           console.log(res);
         }
       } catch (error) {
-        console.log("Error in useGetAppliedJob is :", error);
+        // console.log("Error in useGetAppliedJob is :", error);
+        toast.error("No applications found");
       }
     };
     fetchAppliedJobs();

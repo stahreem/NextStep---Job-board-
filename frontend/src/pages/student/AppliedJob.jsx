@@ -15,7 +15,6 @@ import { useSelector } from "react-redux";
 function AppliedJob() {
   useGetAppliedJob();
   const { allAppliedJob } = useSelector((store) => store.job);
-  console.log(allAppliedJob);
 
   return (
     <div>
@@ -30,6 +29,7 @@ function AppliedJob() {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Location</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Application Status</TableHead>
             </TableRow>
@@ -49,6 +49,7 @@ function AppliedJob() {
                 <TableRow key={app._id} className="font-semibold">
                   <TableCell>{app?.createdAt?.split("T")[0]}</TableCell>
                   <TableCell>{app?.job?.company?.name || "N/A"}</TableCell>
+                  <TableCell>{app?.job?.company?.location || "N/A"}</TableCell>
                   <TableCell>{app?.job?.title || "N/A"}</TableCell>
                   <TableCell>
                     <Badge

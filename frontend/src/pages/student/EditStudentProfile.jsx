@@ -14,7 +14,6 @@ function EditStudentProfile() {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
 
-  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -149,9 +148,9 @@ function EditStudentProfile() {
   };
 
   return (
-    <section >
+    <section>
       <Navbar />
-      <div className=" px-5 py-10 mx-auto">
+      <div className="px-5 py-10 mx-auto ">
         <div className="max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-center text-[#0e4d62] mb-6">
             Edit Profile

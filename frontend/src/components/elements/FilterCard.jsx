@@ -3,6 +3,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { setSearchQuery } from "@/redux/jobSlice";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { Button } from "../ui/button";
 
 const filterData = [
   {
@@ -20,16 +21,31 @@ const filterData = [
   {
     filterType: "Industry",
     options: [
-      "Frontend Developer",
+      "AI Engineer",
+      "AI Research",
       "Backend Developer",
-      "Full Stack Developer",
-      "Data Scientist",
-      "Graphic Designer",
-      "UI/UX Designer",
-      "Project Manager",
-      "Mobile Developer",
-      "DevOps Engineer",
+      "Business Analyst",
+      "Cloud Architecture",
+      "Cloud Engineer",
+      "Cloud Security Analyst",
       "Cybersecurity",
+      "Data Engineer",
+      "Data Scientist",
+      "DevOps Engineer",
+      "Frontend Developer",
+      "Full Stack Developer",
+      "Graphic Designer",
+      "Java Developer",
+      "Mobile Developer",
+      "Monitor Graphics",
+      "Project Manager",
+      "Python Developer",
+      "QA Automation",
+      "React Developer",
+      "Robotic Engineer",
+      "Software QA Engineer",
+      "System Analyst",
+      "UI/UX Designer",
     ],
   },
 ];
@@ -49,10 +65,20 @@ function FilterCard() {
       <div className="p-4 bg-white border rounded-md shadow-sm">
         <h1 className="mb-4 text-xl font-semibold">Filter Options</h1>
         <hr className="mb-4" />
-
+        <Button
+          variant="destructive"
+          onClick={() => {
+            setSelectedValue("");
+            dispatch(setSearchQuery(""));
+          }}
+          className="mt-1 mb-2 w-50"
+        >
+          Clear Filters
+        </Button>
         {filterData.map((filter, index) => (
           <div key={index} className="mb-6">
             <h2 className="mb-2 text-lg font-medium">{filter.filterType}</h2>
+
             <RadioGroup value={selectedValue} onValueChange={changeHandle}>
               {filter.options.map((option, optionIndex) => (
                 <div

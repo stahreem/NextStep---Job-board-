@@ -1,24 +1,22 @@
-import JobsTable from '@/components/elements/JobsTable';
-import Navbar from '@/components/elements/Navbar';
-import { Button } from '@/components/ui/button';
-import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs';
-// import { Input } from '@/components/ui/input';
-import { setSearchJob } from '@/redux/jobSlice';
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import JobsTable from "@/components/elements/JobsTable";
+import Navbar from "@/components/elements/Navbar";
+import { Button } from "@/components/ui/button";
+import useGetAllAdminJobs from "@/hooks/useGetAllAdminJobs";
+import { setSearchJob } from "@/redux/jobSlice";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 // import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 function AdminJobs() {
-  useGetAllAdminJobs()
-  const [input, setInput] = useState()
+  useGetAllAdminJobs();
+  const [input, setInput] = useState();
   const navigate = useNavigate();
-const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-useEffect(() => {
-  dispatch(setSearchJob(input))
-},[input])
-
+  useEffect(() => {
+    dispatch(setSearchJob(input));
+  }, [input]);
 
   return (
     <div className="min-h-screen">
@@ -32,11 +30,11 @@ useEffect(() => {
             className="w-[70%] py-3 px-4 text-lg text-gray-800 bg-white rounded-full shadow-md placeholder-gray-500 focus:outline-none focus:ring-2"
             onChange={(e) => setInput(e.target.value)}
           />
-          
+
           {/* Add job post Button */}
           <Button
             className="bg-[#0e4d62]"
-            onClick={() => navigate('/admin/job/post')}
+            onClick={() => navigate("/admin/job/post")}
           >
             Create Job Post
           </Button>

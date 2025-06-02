@@ -1,21 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
 import axios from "axios";
 import { toast } from "sonner";
-import { useEffect, useMemo } from "react";
-import { setSingleJob } from "@/redux/jobSlice";
+import { useMemo } from "react";
 import { BOOKMARK_API_END_POINT } from "@/utils/Constant";
 import { setBookmarkedJobs } from "@/redux/jobSlice";
 
 function JobCard({ job }) {
   const navigate = useNavigate();
-  // const { singleJob } = useSelector((store) => store.job);
-  // const { user } = useSelector((store) => store.auth);
+
   const dispatch = useDispatch();
 
   // Calculate days ago
@@ -25,25 +22,6 @@ function JobCard({ job }) {
     const timeDifference = currentTime - createdAt;
     return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   }, [job?.createdAt]);
-
-  // Fetch job details when component mounts
-  // useEffect(() => {
-  //   const fetchSingleJob = async () => {
-  //     try {
-  //       const res = await axios.get(`${APPLICATION_API_END_POINT}/job/${job?._id}`, {
-  //         withCredentials: true,
-  //       });
-  //       if (res.data.success) {
-  //         dispatch(setSingleJob(res.data.job));
-  //       }
-  //     } catch (error) {
-  //       const errorMsg =
-  //         error.response?.data?.message || "Something went wrong. Please try again later.";
-  //       toast.error(errorMsg);
-  //     }
-  //   };
-  //   fetchSingleJob();
-  // }, [job, dispatch]);
 
   const { bookmarkedJobs = [] } = useSelector((store) => store.job);
 
@@ -62,7 +40,6 @@ function JobCard({ job }) {
       const res = await axios.post(url, {}, { withCredentials: true });
 
       if (res.data.success) {
-        // Try to refresh bookmarked IDs
         try {
           const updatedIdsRes = await axios.get(
             `${BOOKMARK_API_END_POINT}/ids`,
@@ -93,27 +70,11 @@ function JobCard({ job }) {
 
   const isBookmarked = bookmarkedJobs.includes(job._id);
 
-  // console.log("Bookmarked IDs:", bookmarkedJobs);
-  // console.log("Current Job ID:", job._id);
-
   return (
     <div className="p-6 sm:p-4 mb-5 md:p-5 rounded-lg shadow-md border border-[#b1ebe4] bg-white hover:shadow-lg transition-shadow duration-200 ease-in-out relative">
       <span className="text-xs text-[#1c3230] font-semibold">
         {daysAgo === 0 ? "Today" : `${daysAgo} days ago`}
       </span>
-
-      {/* Bookmark Button */}
-      {/* <button
-        className="absolute z-30 p-1 text-gray-600 bg-gray-100 rounded-full top-3 right-3 hover:bg-gray-200"
-        aria-label="Bookmark this job"
-        onClick={bookmarkJobHandler}
-      >
-        <Bookmark
-          className={`w-5 h-5 ${
-            isBookmarked ? "fill-current text-primaryAccent" : ""
-          }`}
-        />
-      </button> */}
 
       {/* Company Info */}
       <div className="flex items-center justify-between mt-[-20px]">

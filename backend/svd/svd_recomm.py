@@ -1,13 +1,19 @@
+import os
+from dotenv import load_dotenv
 import pandas as pd
 from pymongo import MongoClient
 from sklearn.decomposition import TruncatedSVD
 import json
 import sys
 
+# Load .env variables
+load_dotenv()
+
 # MongoDB connection
-MONGO_URI = "mongodb+srv://shifatahreem313:LWPxqxpiYx0ZffMo@cluster0.nezz1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME", "test")
 client = MongoClient(MONGO_URI)
-db = client["test"]
+db = client[DB_NAME]
 
 def fetch_interaction_data():
     applications = db["applications"].find({})
@@ -74,7 +80,6 @@ if __name__ == "__main__":
         interaction_matrix, approx_df = train_svd(df)
         recommendations = recommend_jobs_for_user(user_id, interaction_matrix, approx_df, top_n=5)
         job_titles_map = fetch_job_titles()
-        # recommendation_titles = [job_titles_map.get(job_id, f"Unknown Job ID: {job_id}") for job_id in recommendations]
 
         print(json.dumps(recommendations))  # OUTPUT
     except Exception as e:

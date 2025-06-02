@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-// import Typed from "react-typed"; // Uncomment when using react-typed
 import { Button } from "../ui/button";
 import { useDispatch } from "react-redux";
 import { setSearchQuery } from "@/redux/jobSlice";
@@ -28,17 +27,7 @@ function HeroSection() {
         {/* Main heading with typing animation */}
         <h1 className="text-4xl font-bold leading-snug">
           Search, Apply & <br />
-          Get Your{" "}
-          <span className="text-[#0dbfb3]">
-            {/* Uncomment below when react-typed is installed */}
-            {/* <Typed
-              strings={["Dream Job", "Dream Internship"]}
-              typeSpeed={80}
-              backSpeed={60}
-              loop
-            /> */}
-            Dream Job
-          </span>
+          Get Your <span className="text-[#0dbfb3]">Dream Job</span>
         </h1>
 
         {/* Search Input and Button */}
