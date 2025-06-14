@@ -50,11 +50,6 @@ def parse_job_details(job_id_str):
     if not job:
         return {"error": "Job not found."}
 
-    # Check if already parsed
-    existing = db["parsedjobs"].find_one({"jobId": ObjectId(job_id_str)})
-    if existing:
-        return {"message": "Job already parsed and saved in parsedjobs."}
-
     description = job.get("description", "")
     requirements = job.get("requirements", [])
     requirements_text = " ".join(requirements) if isinstance(requirements, list) else str(requirements)
@@ -83,16 +78,28 @@ def parse_job_details(job_id_str):
         "jobId": ObjectId(job_id_str)
     }
 
-    db["parsedjobs"].insert_one(update_data)
-    return update_data
+    existing = db["parsedjobs"].find_one({"jobId": ObjectId(job_id_str)})
 
-
+    if existing:
+        db["parsedjobs"].update_one(
+            {"jobId": ObjectId(job_id_str)},
+            {"$set": update_data}
+        )
+        return {"message": "Parsed job updated successfully.", **update_data}
+    # print("Parsed job updated successfully",**update_data)
+    else:
+        db["parsedjobs"].insert_one(update_data)
+        return {"message": "Parsed job inserted successfully.", **update_data}
+    
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python parse_job_details.py <job_id>")
+        print("Usage: python job_parser.py <job_id>")
         sys.exit(1)
 
     job_id = sys.argv[1]
     result = parse_job_details(job_id)
     if result:
         print(json.dumps(result, indent=2, default=str))
+    else:
+        print("❌ No result returned from parse_job_details()")
+
