@@ -24,6 +24,7 @@ function ApplicationTable() {
   const { applicants } = useSelector((store) => store.application);
   const { id: jobId } = useParams();
   const [fitScores, setFitScores] = useState({});
+  const [fitScoresLoaded, setFitScoresLoaded] = useState(false);
 
   const statusHandler = async (status, id) => {
     try {
@@ -50,7 +51,6 @@ function ApplicationTable() {
   useEffect(() => {
     const fetchFitScores = async () => {
       const scores = {};
-
       const requests = applicants.map(async (applicant) => {
         const userId = String(applicant?.applicant?._id);
         if (!userId) return;
@@ -79,9 +79,11 @@ function ApplicationTable() {
 
       console.log("✅ Final fit scores map:", scores);
       setFitScores(scores);
+      setFitScoresLoaded(true);
     };
 
     if (applicants.length) {
+      setFitScoresLoaded(false); // reset before fetch
       fetchFitScores();
     }
   }, [applicants, jobId]);
@@ -111,86 +113,83 @@ function ApplicationTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {applicants.length === 0 ? (
+            {!fitScoresLoaded ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
+                  className="italic text-center text-gray-500"
+                >
+                  Loading fit scores...
+                </TableCell>
+              </TableRow>
+            ) : applicants.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
                   className="font-bold text-center text-gray-400"
                 >
                   No jobs posted yet
                 </TableCell>
               </TableRow>
             ) : (
-              applicants.map((app) => (
-                <TableRow key={app._id} className="font-semibold">
-                  <TableCell>{app?.createdAt?.split("T")[0]}</TableCell>
-                  <TableCell>{app?.applicant?.fullName}</TableCell>
-                  <TableCell>{app?.applicant?.email}</TableCell>
-                  <TableCell>{app?.applicant?.phoneNumber}</TableCell>
-                  <TableCell>
-                    {app?.applicant?.studentDetails?.resumeLink ? (
-                      <a
-                        href={app?.applicant?.studentDetails?.resumeLink}
-                        className="text-blue-700"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {app?.applicant?.studentDetails?.resumeName}
-                      </a>
-                    ) : (
-                      <span>Not Uploaded</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const userId = String(app?.applicant?._id);
-                      const score = fitScores?.[userId];
+              applicants.map((app) => {
+                const userId = String(app?.applicant?._id);
+                const score = fitScores?.[userId];
 
-                      console.log(
-                        "Rendering cell for:",
-                        userId,
-                        "score:",
-                        score
-                      );
-
-                      if (typeof score === "number") {
-                        return (
-                          <span className={getColorClass(score)}>{score}%</span>
-                        );
-                      } else {
-                        return (
-                          <span className="italic text-gray-400">
-                            Calculating...
-                          </span>
-                        );
-                      }
-                    })()}
-                  </TableCell>
-
-                  <TableCell>
-                    {app?.status === "accepted" ? (
-                      <span className="text-green-600">Accepted</span>
-                    ) : app?.status === "rejected" ? (
-                      <span className="text-red-600">Rejected</span>
-                    ) : (
-                      <div className="flex justify-start gap-4">
-                        <CheckCircle
-                          className="cursor-pointer"
-                          size={24}
-                          color="green"
-                          onClick={() => statusHandler("accepted", app._id)}
-                        />
-                        <XCircle
-                          className="cursor-pointer"
-                          size={24}
-                          color="red"
-                          onClick={() => statusHandler("rejected", app._id)}
-                        />
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+                return (
+                  <TableRow key={app._id} className="font-semibold">
+                    <TableCell>{app?.createdAt?.split("T")[0]}</TableCell>
+                    <TableCell>{app?.applicant?.fullName}</TableCell>
+                    <TableCell>{app?.applicant?.email}</TableCell>
+                    <TableCell>{app?.applicant?.phoneNumber}</TableCell>
+                    <TableCell>
+                      {app?.applicant?.studentDetails?.resumeLink ? (
+                        <a
+                          href={app?.applicant?.studentDetails?.resumeLink}
+                          className="text-blue-700"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {app?.applicant?.studentDetails?.resumeName}
+                        </a>
+                      ) : (
+                        <span>Not Uploaded</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {typeof score === "number" ? (
+                        <span className={getColorClass(score)}>{score}%</span>
+                      ) : (
+                        <span className="italic text-gray-400">
+                          Not available
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {app?.status === "accepted" ? (
+                        <span className="text-green-600">Accepted</span>
+                      ) : app?.status === "rejected" ? (
+                        <span className="text-red-600">Rejected</span>
+                      ) : (
+                        <div className="flex justify-start gap-4">
+                          <CheckCircle
+                            className="cursor-pointer"
+                            size={24}
+                            color="green"
+                            onClick={() => statusHandler("accepted", app._id)}
+                          />
+                          <XCircle
+                            className="cursor-pointer"
+                            size={24}
+                            color="red"
+                            onClick={() => statusHandler("rejected", app._id)}
+                          />
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
