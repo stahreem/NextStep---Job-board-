@@ -51,13 +51,10 @@ function ApplicationTable() {
     const fetchFitScores = async () => {
       const scores = {};
 
-      for (const applicant of applicants) {
+      const requests = applicants.map(async (applicant) => {
         const userId = String(applicant?.applicant?._id);
-        if (!userId) continue;
-        console.log(
-          "Applicants list:",
-          applicants.map((a) => a?.applicant?._id)
-        );
+        if (!userId) return;
+
         try {
           const res = await axios.get(
             `${FIT_SCORE_API_END_POINT}/${jobId}/${userId}`
@@ -70,19 +67,23 @@ function ApplicationTable() {
             const score = res.data.recommendedScore.fit_score;
             scores[userId] = score;
           } else {
-            scores[userId] = null; // Will show "Not Calculated"
+            scores[userId] = null;
           }
         } catch (error) {
+          console.error("❌ Error fetching fit score for:", userId, error);
           scores[userId] = null;
-          console.error("Error fetching fit score for user:", userId, error);
         }
-      }
+      });
 
-      console.log("Final fit scores map:", scores);
+      await Promise.all(requests);
+
+      console.log("✅ Final fit scores map:", scores);
       setFitScores(scores);
     };
 
-    if (applicants.length) fetchFitScores();
+    if (applicants.length) {
+      fetchFitScores();
+    }
   }, [applicants, jobId]);
 
   const getColorClass = (score) => {
@@ -158,7 +159,9 @@ function ApplicationTable() {
                         );
                       } else {
                         return (
-                          <span className="italic text-gray-400">Pending</span>
+                          <span className="italic text-gray-400">
+                            Calculating...
+                          </span>
                         );
                       }
                     })()}

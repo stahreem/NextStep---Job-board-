@@ -16,7 +16,7 @@ SKILLS_DB = [
     'html', 'css', 'sass', 'less', 'bootstrap', 'tailwind', 'react', 'angular', 'vue', 'next.js', 'nuxt.js', 'node.js', 'express', 
     'django', 'flask', 'fastapi', 'flutter', 'react native', 'swift', 'kotlin', 'android', 'ios', 'xamarin',
     'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'terraform', 'ansible', 'jenkins', 'gitlab ci/cd', 'github actions', 'devops',
-    'sql', 'postgresql', 'mongodb', 'oracle', 'redis', 'sqlite', 'cassandra', 'firebase', 'neo4j',
+    'sql', 'postgresql', 'mongodb', 'oracle', 'redis', 'sqlite', 'cassandra', 'firebase', 'neo4j', "power bi","agile ",
     'numpy', 'pandas', 'scikit-learn', 'tensorflow', 'keras', 'pytorch', 'matplotlib', 'seaborn', 'openai', 'transformers', 'huggingface', 
     'cv2', 'opencv', 'statistics', 'deep learning', 'machine learning', 'data analysis', 'data visualization', 'nlp', 'llm',
     'git', 'github', 'jira', 'uml', 'rest api', 'graphql', 'socket.io', 'websockets', 'oauth', 'jwt', 'ci/cd', 'agile', 'scrum', 'tdd', 
@@ -48,7 +48,12 @@ def extract_title(text):
 def parse_job_details(job_id_str):
     job = jobs_collection.find_one({"_id": ObjectId(job_id_str)})
     if not job:
-        return None
+        return {"error": "Job not found."}
+
+    # Check if already parsed
+    existing = db["parsedjobs"].find_one({"jobId": ObjectId(job_id_str)})
+    if existing:
+        return {"message": "Job already parsed and saved in parsedjobs."}
 
     description = job.get("description", "")
     requirements = job.get("requirements", [])
@@ -74,11 +79,13 @@ def parse_job_details(job_id_str):
         "parsed_company": parsed_company,
         "parsed_location": parsed_location,
         "parsed_jobType": parsed_jobType,
-        "parsed": True  # Avoid re-parsing
+        "parsed": True,
+        "jobId": ObjectId(job_id_str)
     }
 
-    jobs_collection.update_one({"_id": ObjectId(job_id_str)}, {"$set": update_data})
+    db["parsedjobs"].insert_one(update_data)
     return update_data
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -88,4 +95,4 @@ if __name__ == "__main__":
     job_id = sys.argv[1]
     result = parse_job_details(job_id)
     if result:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2, default=str))

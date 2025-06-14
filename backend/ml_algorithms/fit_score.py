@@ -1,18 +1,20 @@
-import argparse
 import pickle
 import pymongo
 import os
 from bson import ObjectId
+import sys
 import json
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
+# Connect to MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
 db = client["test"]
 
+# Load models and vectorizer
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 
@@ -68,7 +70,6 @@ def hybrid_skill_match_score(resume_skills, job_skills):
             return max(base_score, 33.0)
         else:
             return base_score
-
     elif total <= 6:
         if matched >= 5:
             return 90.0
@@ -82,28 +83,32 @@ def hybrid_skill_match_score(resume_skills, job_skills):
             return max(base_score, 28.0)
         else:
             return base_score
-
     else:
         return base_score
 
-def main():
-    parser = argparse.ArgumentParser(description="Fit Score Service")
-    parser.add_argument("user_id", help="User ID (from parsed_resumes.user)")
-    parser.add_argument("job_id", help="Job ID (from parsedjobs.jobId)")
-
-    args = parser.parse_args()
-
+def compute_fit_score(user_id, job_id):
     try:
-        resume_skills, job_skills = fetch_skills(args.user_id, args.job_id)
-
+        resume_skills, job_skills = fetch_skills(user_id, job_id)
         ml_scores = predict_fit_score(resume_skills, job_skills)
         hybrid_score = hybrid_skill_match_score(resume_skills, job_skills)
-        final_score = max(ml_scores["logistic_regression"], ml_scores["naive_bayes"], hybrid_score)
+        final_score = round(max(ml_scores["logistic_regression"], ml_scores["naive_bayes"], hybrid_score), 2)
 
-        print(json.dumps({"fit_score": round(final_score, 2)}))
-
-    except ValueError as e:
-        print(json.dumps({"error": str(e)}))
+        return {
+            "fit_score": final_score,
+            #"logistic_regression": round(ml_scores["logistic_regression"], 2),
+            #"naive_bayes": round(ml_scores["naive_bayes"], 2),
+            #"hybrid_score": round(hybrid_score, 2)
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 3:
+        print(json.dumps({"error": "Missing user_id or job_id"}))
+        sys.exit(1)
+
+    user_id = sys.argv[1]
+    job_id = sys.argv[2]
+
+    result = compute_fit_score(user_id, job_id)
+    print(json.dumps(result))

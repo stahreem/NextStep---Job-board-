@@ -92,9 +92,7 @@ export const recommendJobs = async (req, res) => {
           });
         }
 
-        const recommendedJobIds = parsedResult.recommendations.map(
-          (rec) => rec.jobId
-        );
+        const recommendedJobIds = parsedResult.recommendations;
 
         if (
           !Array.isArray(recommendedJobIds) ||
@@ -169,7 +167,7 @@ export const getFitScore = async (req, res) => {
 
     try {
       const recommendedScore = JSON.parse(result);
-      console.log("✅ Fit Score:", recommendedScore.fit_score);
+      console.log("✅ Fit Score:", recommendedScore);
 
       return res.status(200).json({
         success: true,

@@ -34,19 +34,19 @@ function BookMark() {
   return (
     <div>
       <Navbar />
-      <h1 className="text-2xl font-bold mt-4 text-textPrimary text-center">
+      <h1 className="mt-4 text-2xl font-bold text-center text-textPrimary">
         Bookmarked Jobs
       </h1>
-      <p className="text-sm text-gray-600 mb-6 text-center">
+      <p className="mb-6 text-sm text-center text-gray-600">
         You have bookmarked{" "}
         <span className="font-semibold">{bookmarkedJobs.length}</span> job
         {bookmarkedJobs.length !== 1 ? "s" : ""}
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+      <div className="grid grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3">
         {bookmarkedJobs.length ? (
           bookmarkedJobs.map((job) => {
-            const postedDate = new Date(job.createdAt);
+            const postedDate = new Date(job?.createdAt);
             const today = new Date();
             const daysAgo = Math.floor(
               (today - postedDate) / (1000 * 60 * 60 * 24)
@@ -54,7 +54,7 @@ function BookMark() {
 
             return (
               <div
-                key={job._id}
+                key={job?._id}
                 className="w-full max-w-md p-6 sm:p-4 mb-5 md:p-5 rounded-lg shadow-md border border-[#b1ebe4] bg-white hover:shadow-lg transition-shadow duration-200 ease-in-out relative"
               >
                 <span className="text-xs text-[#1c3230] font-semibold">
@@ -125,7 +125,7 @@ function BookMark() {
             );
           })
         ) : (
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-sm text-center text-gray-500">
             No bookmarked jobs yet.
           </p>
         )}

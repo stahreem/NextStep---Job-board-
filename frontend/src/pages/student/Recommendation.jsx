@@ -31,7 +31,7 @@ function Recommendation() {
 
       //  Content-based response
       if (contentRes.data.success && Array.isArray(contentRes.data.data)) {
-        // console.log("Content-based Recommendations:", contentRes.data.data);
+        console.log("Content-based Recommendations:", contentRes.data.data);
         setContentRecs(contentRes.data.data);
       }
     } catch (error) {

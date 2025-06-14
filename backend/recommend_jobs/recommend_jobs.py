@@ -53,7 +53,8 @@ def main():
 
     top_jobs = sorted(zip(similarity_scores, jobs), key=lambda x: x[0], reverse=True)[:5]
 
-    recommendations = [{"jobId": str(job["jobId"]), "score": round(float(score) * 100, 2)} for score, job in top_jobs]
+
+    recommendations = [str(job["jobId"]) for _, job in top_jobs]
 
     print(json.dumps({"success": True, "recommendations": recommendations}, indent=2))
 
